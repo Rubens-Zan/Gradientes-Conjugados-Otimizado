@@ -12,6 +12,7 @@ typedef struct {
   double *A; // coeficientes nao nulos da matriz, seguindo a ordem [diagonal_superior, diagonais_inferiores, diagonais_superiores]
   double *b; // termos independentes
   unsigned int n; // tamanho do SL
+  unsigned int nDiagonais; // numero de diagonais do SL
 } SistLinear_t;
 
 

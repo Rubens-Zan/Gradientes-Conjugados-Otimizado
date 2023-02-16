@@ -7,7 +7,9 @@ CC = gcc
 EXEC = cgSolver
 CFLAG = -Wall -std=c99 -lm
 MODULOS = sislin \
-	utils  
+	utils \
+	resolvedorGradConjug 
+	
 OBJETOS = main.o $(addsuffix .o,$(MODULOS))
 
 .PHONY: all clean

@@ -121,6 +121,8 @@ void iniSisLin(SistLinear_t *SL, unsigned int nDiagonais)
 {
   unsigned int indMatriz = 1,indMatrizInf=SL->n+1,indMatrizSup=indMatrizInf+calcElementoDiagonaisInf(SL->n, nDiagonais);
   unsigned int elementosDiagonal = SL->n - 1;
+
+  SL->nDiagonais = nDiagonais; 
   SL->A[0]=0.0; 
   // o residuo do unroll eh a diagonal principal, como tem sempre k-impar diagonais na matriz
   geraDiagonal(SL->A,SL->n,SL->n, nDiagonais,indMatriz);
@@ -143,7 +145,9 @@ void iniSisLin(SistLinear_t *SL, unsigned int nDiagonais)
     }
   }
   #endif
-
+  
+  for (unsigned int i=0;i < SL->n;++i)
+    SL->b[i] = generateRandomB(nDiagonais);
 
 }
 

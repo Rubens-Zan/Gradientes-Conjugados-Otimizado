@@ -3,18 +3,18 @@
 
 #include "utils.h"
 #include "sislin.h"
-
+#include "resolvedorGradConjug.h"
 
 int main(int argc, char **argv)
 {
     tComando *comando = (tComando *)malloc(sizeof(tComando));
     tratamentoEntrada(argc, argv, comando);
     SistLinear_t *SL = alocaSisLin(comando->dimensao, comando->nDiagonais);
-    // FILE *arqSaida;
+    FILE *arqSaida;
     
     srand(20222);
 
-	// arqSaida = fopen(comando->saida,"w+");
+	arqSaida = fopen(comando->saida,"w+");
     
     
 	// fprintf(arqSaida,"#rzl20 Rubens Zandomenighi Laszlo \n");
@@ -22,11 +22,12 @@ int main(int argc, char **argv)
 
 
     iniSisLin(SL, comando->nDiagonais);
-    // if (comando->usarPreCondicionador){
-    //     gradienteConjugadoPreCondic(SL, comando->nIter,comando->erroMax,arqSaida);
-    // } else {
+    if (comando->usarPreCondicionador){
+        gradienteConjugadoPreCondic(SL, comando->nIter,comando->erroMax,arqSaida);
+    } else {
+        printf("ERRO: DEVE SER USADO APENAS COM PRE CONDICIONADOR"); 
     //     gradienteConjugado(SL,comando->nIter,comando->erroMax, arqSaida); 
-    // }
+    }
 	// fclose(arqSaida);
     free(comando);
     liberaSisLin(SL);
