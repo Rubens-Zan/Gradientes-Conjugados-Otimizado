@@ -186,17 +186,18 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	calculaResiduoOriginal(SL, vetx, res); 
     tempoResid = timestamp() - tempoResid; 
     fprintf(arqSaida, "# residuo: || %.15g || \n", normaL2Residuo(res, SL->n));
-  // tempo final
+  	
+	// tempo final
   	tempoPreCond =tempoPreCond - timestamp();
 
     fprintf(arqSaida, "# Tempo PC: %.15g \n", tempoPreCond);
-    tMedioIter = tMedioIter / it;
+    tMedioIter = tMedioIter / numIter;
     fprintf(arqSaida, "# Tempo iter: %.15g \n", tMedioIter);
 
     fprintf(arqSaida, "# Tempo residuo: %.15g \n", tempoResid);
     fprintf(arqSaida, "# \n");
     fprintf(arqSaida, "%d", SL->n);
-    prnVetorArq(x, SL->n, arqSaida);
+    prnVetorArq(vetx, SL->n, arqSaida);
 
 	LIKWID_MARKER_STOP("op2");
  
