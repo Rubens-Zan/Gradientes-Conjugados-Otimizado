@@ -5,7 +5,7 @@
 #include "sislin.h"
 #include "resolvedorGradConjug.h"
 
-#define ALIGNMENT 16
+
 int main(int argc, char **argv)
 {
     tComando *comando = (tComando *)malloc(sizeof(tComando));

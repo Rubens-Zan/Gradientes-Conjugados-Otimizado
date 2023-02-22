@@ -5,6 +5,7 @@
 
 #define COEF_MAX 32.0 // Valor máximo usado para gerar valores aleatórios de
 		      // coeficientes nos sistemas lineares.
+#define ALIGNMENT 16
 
 
 // Estrutura para definiçao de um sistema linear qualquer

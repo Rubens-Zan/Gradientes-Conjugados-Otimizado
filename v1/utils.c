@@ -11,12 +11,12 @@
 // Valor absoluto de um número. Alternativa ao uso da função 'fabs()'
 #define ABS(num)  ((num) < 0.0 ? -(num) : (num))
 
-// double timestamp(void)
-// {
-//   struct timespec tp;
-//   clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
-//   return((double)(tp.tv_sec + tp.tv_nsec*1.0e-9));
-// }
+double timestamp(void)
+{
+  struct timespec tp;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+  return((double)(tp.tv_sec + tp.tv_nsec*1.0e-9));
+}
 
 /**
  * @brief Função para fazer o tratamento da entrada
@@ -58,6 +58,31 @@ void tratamentoEntrada(int argc, char **argv, tComando *comando){
 
 }
 
+double ** alocarMatriz(int lin,int col){
+    double **matriz;
+    matriz = malloc(lin * sizeof(double*)); 
+    matriz[0]=malloc(lin *col*sizeof(double));
+
+    for (int i=1; i < lin; i++)
+        matriz[i] = matriz[0] + i * col;
+
+    return matriz; 
+}
+
+void liberarMatriz(double **matriz){
+    free(matriz[0]);
+    free(matriz);
+}
+
+void inicializarMatriz(double **vet, int lin,int col){
+    for (int i=0;i < lin;++i)
+        for (int j=0;j < col;++j){
+            vet[i][j]=0; 
+        }
+
+}
+
+
 /******************NORMAS**********************************/
 
 /**
@@ -79,6 +104,13 @@ double normaL2Residuo( double *residuo, unsigned int n)
         // Soma o quadrado dos elementos das soluções
         soma = soma + residuo[i]*residuo[i];
 
+        // Testa valores inválidos
+        // if (isnan(soma) || isinf(soma))
+        // {
+        //     fprintf(stderr, "Erro variavel invalida: soma(normaL2Residuo): %g é NaN ou +/-Infinito\n", soma);
+        //     exit(1);
+        // }
+
     }
     raiz = sqrt(soma);
 
@@ -95,7 +127,7 @@ double normaL2Residuo( double *residuo, unsigned int n)
  * @param n - tamanho do vetor
  * @return double 
  */
-double normaMaxRelat( double  * restrict x,  double  * restrict xAnt, unsigned int n,  double  * restrict maiorErroAbs)
+double normaMaxRelat(double *x, double *xAnt, unsigned int n, double *maiorErroAbs)
 {
 
     double maiorErro = ABS(x[0] - xAnt[0]) / ABS(x[0]);
@@ -105,6 +137,12 @@ double normaMaxRelat( double  * restrict x,  double  * restrict xAnt, unsigned i
         if (ABS(x[i] - xAnt[i]) / ABS(x[i]) > maiorErro)
         {
             maiorErro = ABS(x[i] - xAnt[i]) / ABS(x[i]);      
+            // Testa valores inválidos    
+            if (isnan(maiorErro) || isinf(maiorErro))
+            {
+                fprintf(stderr, "Erro variavel invalida: maiorErro(normaMaxRelat): %g é NaN ou +/-Infinito\n", maiorErro);
+                exit(1);
+            }
 
             if (ABS(x[i] - xAnt[i] ) > *maiorErroAbs)
                 *maiorErroAbs = ABS(x[i] - xAnt[i]);
