@@ -54,7 +54,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	double normx;			// ||x||
 	double relerr;			// erro relativo atual
 	double aux0, aux1;		// aux, aux1
-	double *vetxold;			// vetor x anterior
+	double *xAnt;			// vetor x anterior
 	double *vetv;				// v
 	double *vetz;			    // z
 	double *vety;			    // y
@@ -62,20 +62,17 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	unsigned int indxmax;	// indice no qual max(|xatual - xold|)
 	double soma;			// variavel auxiliar nos lacos
     double tMedioIter, tempoResid, tempoPreCond, tempoInicio;
-
-    double *simmat = SL->A;
     unsigned int n =SL->n;
-    double *atvb = SL->b;
+
     double *res = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));;
     double *vetx =aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
-	double k = SL->nDiagonais;
 
     indxmax = 0;
 
 	vetz = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
-	vetxold = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
-	memcpy(vetxold, vetx, (n + 1)*sizeof(double));	// x0 = 0
-	memcpy(res, atvb, (n + 1)*sizeof(double));		// r = b
+	xAnt = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	memcpy(xAnt, vetx, (n + 1)*sizeof(double));	// x0 = 0
+	memcpy(res, SL->b, (n + 1)*sizeof(double));		// r = b
 	vety = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
 	vetv = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
 	
@@ -88,14 +85,14 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	vetv = malloc((n + 1) * sizeof(double));
 	vetz = malloc((n + 1) * sizeof(double));
 	vety = malloc((n + 1) * sizeof(double));
-	vetxold = malloc((n + 1) * sizeof(double));
-	memcpy(vetxold, vetx, (n + 1)*sizeof(double));	//! x0 = 0
-	memcpy(res, atvb, (n + 1)*sizeof(double));		//! r = b
+	xAnt = malloc((n + 1) * sizeof(double));
+	memcpy(xAnt, vetx, (n + 1)*sizeof(double));	//! x0 = 0
+	memcpy(res, SL->b, (n + 1)*sizeof(double));		//! r = b
 	
 	for(unsigned int i = 1; i < (n + 1); i++)		//! v = M-1b, y = M-1r 
 	{
-		vetv[i] = (atvb[i] / simmat[indexMap(i,i,k)]);
-		vety[i] = (res[i] / simmat[indexMap(i,i,k)]); 
+		vetv[i] = (SL->b[i] / SL->A[indexMap(i,i,SL->nDiagonais)]);
+		vety[i] = (res[i] / SL->A[indexMap(i,i,SL->nDiagonais)]); 
 	}
 	aux0 = 0.0;
 	for(unsigned int i = 1; i < (n + 1); i++)		//! aux = ytr
@@ -116,7 +113,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 			soma = 0.0;
 			for(unsigned int j = 1; j < (n + 1); j++)
 			{
-				soma += (simmat[indexMap(i,j,k)] ) * vetv[j];
+				soma += (SL->A[indexMap(i,j,SL->nDiagonais)] ) * vetv[j];
 			}
 			vetz[i] = soma;
 		}
@@ -131,7 +128,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 
 		for(unsigned int i = 1; i < (n + 1); i++)	//! xk+1 = xk + sv
 		{
-			vetx[i] = vetxold[i] + (alpha * vetv[i]); 
+			vetx[i] = xAnt[i] + (alpha * vetv[i]); 
 		}
 
 		for(unsigned int i = 1; i < (n + 1); i++)	//! r = r - sz
@@ -141,15 +138,15 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 
 		for(unsigned int i = 1; i < (n + 1); i++)	//! y = M-1r
 		{
-			vety[i] = (res[i] / simmat[indexMap(i,i,k)]); 
+			vety[i] = (res[i] / SL->A[indexMap(i,i,SL->nDiagonais)]); 
 		}
 
 		normx = 0.0;
 		for(unsigned int i = 1; i < (n + 1); i++)	//! calcula ||x||
 		{
-			if (normx < fabs(vetx[i] - vetxold[i]))
+			if (normx < fabs(vetx[i] - xAnt[i]))
 			{
-				normx = fabs(vetx[i] - vetxold[i]);
+				normx = fabs(vetx[i] - xAnt[i]);
 				indxmax = i; 
 			}
 		}		
@@ -172,7 +169,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 		fprintf(arqSaida, "# iter %u: ||%.15g||\n", numIter, normx);
 
 		//! xold = x
-		memcpy(vetxold, vetx, (n + 1)*sizeof(double));
+		memcpy(xAnt, vetx, (n + 1)*sizeof(double));
 		//! relerr = max(|Xi - Xi-1|) / Xi
 		relerr = (normx / fabs(vetx[indxmax])); // nao utilizado nessa implementação
 		//!
@@ -204,5 +201,5 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	free(vetv);
 	free(vetz);
 	free(vety);
-	free(vetxold);
+	free(xAnt);
 }
