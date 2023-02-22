@@ -11,12 +11,12 @@
 // Valor absoluto de um número. Alternativa ao uso da função 'fabs()'
 #define ABS(num)  ((num) < 0.0 ? -(num) : (num))
 
-// double timestamp(void)
-// {
-//   struct timespec tp;
-//   clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
-//   return((double)(tp.tv_sec + tp.tv_nsec*1.0e-9));
-// }
+double timestamp(void)
+{
+  struct timespec tp;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &tp);
+  return((double)(tp.tv_sec + tp.tv_nsec*1.0e-9));
+}
 
 /**
  * @brief Função para fazer o tratamento da entrada

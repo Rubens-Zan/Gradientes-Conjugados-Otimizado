@@ -10,6 +10,6 @@ double normaMaxRelat( double * restrict x,  double * restrict xAnt, unsigned int
 
 double normaL2Residuo( double *residuo, unsigned int n);
 
-// double timestamp(void);
+double timestamp(void);
 void tratamentoEntrada(int argc, char **argv, tComando *comando);
 

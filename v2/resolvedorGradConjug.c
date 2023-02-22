@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <likwid.h>
 
 #define UNROLL 8
 #define STRIDE 8
