@@ -20,13 +20,11 @@ unsigned int indexMap(unsigned int i, unsigned int j, unsigned int k);
 
 void calcMatrizTransp(SistLinear_t *SL, SistLinear_t *SLtransp); 
 SistLinear_t* alocaSisLin (unsigned int n, unsigned int k);
-unsigned int indexa (int i, int j, int nDiagonais, unsigned int tamSL); 
 void liberaSisLin (SistLinear_t *SL);
 void iniSisLin(SistLinear_t *SL, unsigned int nDiagonais, double *matT);
 
 void prnVetorArq(double *v, unsigned int n, FILE *arqSaida);
 void prnVetor (double *vet, unsigned int n);
-unsigned int calcElementoDiagonaisInf(unsigned int tamSl, unsigned int nDiagonais); 
 double multiplicaVetores( double  * restrict vetA,  double  * restrict vetB, unsigned int n);
 
 void copiaVetor ( double  * restrict a,  double  * restrict b, unsigned int N);
