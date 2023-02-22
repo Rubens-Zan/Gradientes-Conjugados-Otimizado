@@ -79,13 +79,6 @@ double normaL2Residuo( double *residuo, unsigned int n)
         // Soma o quadrado dos elementos das soluções
         soma = soma + residuo[i]*residuo[i];
 
-        // Testa valores inválidos
-        if (isnan(soma) || isinf(soma))
-        {
-            fprintf(stderr, "Erro variavel invalida: soma(normaL2Residuo): %g é NaN ou +/-Infinito\n", soma);
-            exit(1);
-        }
-
     }
     raiz = sqrt(soma);
 
@@ -102,7 +95,7 @@ double normaL2Residuo( double *residuo, unsigned int n)
  * @param n - tamanho do vetor
  * @return double 
  */
-double normaMaxRelat(double *x, double *xAnt, unsigned int n, double *maiorErroAbs)
+double normaMaxRelat( double  * restrict x,  double  * restrict xAnt, unsigned int n,  double  * restrict maiorErroAbs)
 {
 
     double maiorErro = ABS(x[0] - xAnt[0]) / ABS(x[0]);
@@ -112,12 +105,6 @@ double normaMaxRelat(double *x, double *xAnt, unsigned int n, double *maiorErroA
         if (ABS(x[i] - xAnt[i]) / ABS(x[i]) > maiorErro)
         {
             maiorErro = ABS(x[i] - xAnt[i]) / ABS(x[i]);      
-            // Testa valores inválidos    
-            if (isnan(maiorErro) || isinf(maiorErro))
-            {
-                fprintf(stderr, "Erro variavel invalida: maiorErro(normaMaxRelat): %g é NaN ou +/-Infinito\n", maiorErro);
-                exit(1);
-            }
 
             if (ABS(x[i] - xAnt[i] ) > *maiorErroAbs)
                 *maiorErroAbs = ABS(x[i] - xAnt[i]);

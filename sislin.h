@@ -12,23 +12,27 @@ typedef struct {
   double *A; // coeficientes nao nulos da matriz, seguindo a ordem [diagonal_superior, diagonais_inferiores, diagonais_superiores]
   double *b; // termos independentes
   unsigned int n; // tamanho do SL
+  unsigned int tam; 
   unsigned int nDiagonais; // numero de diagonais do SL
 } SistLinear_t;
 
+unsigned int indexMap(unsigned int i, unsigned int j, unsigned int k);
 
+void calcMatrizTransp(SistLinear_t *SL, SistLinear_t *SLtransp); 
 SistLinear_t* alocaSisLin (unsigned int n, unsigned int k);
 unsigned int indexa (int i, int j, int nDiagonais, unsigned int tamSL); 
-void iniSisLin (SistLinear_t *SL, unsigned int nDiagonais);
 void liberaSisLin (SistLinear_t *SL);
+void iniSisLin(SistLinear_t *SL, unsigned int nDiagonais, double *matT);
 
+void prnVetorArq(double *v, unsigned int n, FILE *arqSaida);
 void prnVetor (double *vet, unsigned int n);
 unsigned int calcElementoDiagonaisInf(unsigned int tamSl, unsigned int nDiagonais); 
-double multiplicaVetores(double *vetA, double *vetB, unsigned int n);
+double multiplicaVetores( double  * restrict vetA,  double  * restrict vetB, unsigned int n);
 
-// void copiaVetor (double *a, double *b, unsigned int N);
+void copiaVetor ( double  * restrict a,  double  * restrict b, unsigned int N);
+void calcularAtxB(unsigned int k, unsigned int n, double *matrizTransp, double *vb, double *atvb);
+void calcularMatrizAtxA( SistLinear_t   *restrict SL ,double *  matT ,SistLinear_t   *restrict novoSisLin );
 
-// void calcularAtxB(SistLinear_t *SL, double *b); 
-// void calcularMatrizAtxA(SistLinear_t *SL, double **A);
 
 #endif // __SISLIN_H__
 

@@ -7,7 +7,7 @@
 #include <string.h>
 
 #define ABS(num)  ((num) < 0.0 ? -(num) : (num))
-
+#define ALIGNMENT 16
 // Alocaçao de matriz em memória.
 SistLinear_t *alocaSisLin(unsigned int n, unsigned int k)
 {
@@ -17,8 +17,10 @@ SistLinear_t *alocaSisLin(unsigned int n, unsigned int k)
   {
 
     SL->n = n;
-    SL->A = (double *)malloc((n +1)+ (2 * calcElementoDiagonaisInf(n,k) + 100)  * sizeof(double));
-    SL->b = (double *)malloc(n * sizeof(double));
+	  SL->A = aligned_alloc(ALIGNMENT, ((n * k * sizeof(double)) + (ALIGNMENT - ((n * k * sizeof(double)) % ALIGNMENT))));
+
+    SL->b = (double *)malloc(n * sizeof(double)+1);
+    SL->nDiagonais = k; 
 
     if (!(SL->A) || !(SL->b))
     {
@@ -28,6 +30,24 @@ SistLinear_t *alocaSisLin(unsigned int n, unsigned int k)
   }
 
   return (SL);
+}
+/**
+ * @brief      Função que retorna o índice no array de diagonais de um elemento aij
+ *
+ * @param      i   coordenada linha do elemento
+ * @param      j   coordenada coluna do elemento
+ * @param      k   quantidade de diagonais da matriz A
+ *
+ * @return 	   indice de aij no array de diagonais
+ */
+unsigned int indexMap(unsigned int i, unsigned int j, unsigned int k)
+{
+  if ((j > i ? (j - i) : (i - j)) > (k / 2))
+  {
+    return (0);
+  }
+
+	return ((k / 2) + ((i - 1) * k) + j - i);
 }
 
 // Liberacao de memória
@@ -40,9 +60,9 @@ void liberaSisLin(SistLinear_t *SL)
       free(SL->A);
     }
 
-    if (SL->b)
-      free(SL->b);
-
+    // if (SL->b)
+      // free(SL->b);
+    
     free(SL);
   }
 }
@@ -69,128 +89,110 @@ static inline double generateRandomB(unsigned int k)
 }
 
 /**
- * @brief - Gera uma diagonal da matriz 
- * 
- * @param A - Vetor de diagonais principais
- * @param nElementos - n elementos na diagonal
- * @param totalElementos - n elementos na diagonal principal
- * @param nDiagonais - n de diagonais
- * @param indexInicial - index inicial do inicio da diagonal no vetor
- */
-void geraDiagonal(double *A,unsigned int nElementos,unsigned int totalElementos,unsigned int nDiagonais, unsigned int indexInicial){
-  unsigned int idx = indexInicial;
-  #ifdef DEBUG
-  printf("\n");
-  #endif 
-  if (nElementos == totalElementos)
-    for (unsigned int i = 0;i < nElementos;++i){
-      A[idx]= generateRandomA(i,i, nDiagonais); 
-      #ifdef DEBUG
-      printf("%.5g ",A[idx]);
-      #endif
-      ++idx; 
-    }
-  else
-    for (unsigned int i = 0;i < nElementos;++i){
-      A[idx]= generateRandomA(i,i+1, nDiagonais); 
-      #ifdef DEBUG
-      printf("%.5g ",A[idx]);
-      #endif
-      ++idx; 
-    } 
-}
-
-unsigned int calcElementoDiagonaisInf(unsigned int tamSl, unsigned int nDiagonais){
-  unsigned int elementoesDiagsInfs=0; 
-  unsigned int elemDiag = tamSl;
-  for (unsigned int i=0; i < (nDiagonais /2);++i){
-    --elemDiag;
-    elementoesDiagsInfs+= elemDiag;
-  }
-
-  return elementoesDiagsInfs;
-}
-
-/**
  * @brief - Inicia o sistema linear e aplica as propriedades para garantir a convergência
  *
  * @param SL - Sistema linear a ser iniciado
  * @param nDiagonais - Numero de diagonais
  */
-void iniSisLin(SistLinear_t *SL, unsigned int nDiagonais)
+void iniSisLin(SistLinear_t *SL, unsigned int nDiagonais, double *matT)
 {
-  unsigned int indMatriz = 1,indMatrizInf=SL->n+1,indMatrizSup=indMatrizInf+calcElementoDiagonaisInf(SL->n, nDiagonais);
-  unsigned int elementosDiagonal = SL->n - 1;
+  double termo;
+  SL->A[0] = 0.0;
+  matT[0] = 0.0;
+  SL->b[0] = 0.0;
 
-  SL->nDiagonais = nDiagonais; 
-  SL->A[0]=0.0; 
-  // o residuo do unroll eh a diagonal principal, como tem sempre k-impar diagonais na matriz
-  geraDiagonal(SL->A,SL->n,SL->n, nDiagonais,indMatriz);
-  indMatriz+= SL->n + 1; 
-  // unroll de 2 
-  for (int i = 1; i < nDiagonais; i+=2) {
-    geraDiagonal(SL->A, elementosDiagonal, SL->n, nDiagonais, indMatrizInf);
-    geraDiagonal(SL->A, elementosDiagonal, SL->n, nDiagonais, indMatrizSup);
-    indMatrizInf+= elementosDiagonal;
-    indMatrizSup+=elementosDiagonal; 
+	for (unsigned int i = 1; i <= SL->n; ++i)
+	{
+		SL->b[i] = generateRandomB(nDiagonais);
 
-    --elementosDiagonal; 
-  }
+	 	for (unsigned int j = 1; j <= SL->n; ++j)
+	 	{
+	 		if ((j > i ? (j - i) : (i - j)) <= (nDiagonais / 2))
+	 		{
+	 			termo = generateRandomA(i, j, nDiagonais);
+				
+	 			SL->A[indexMap(i, j, nDiagonais)] = termo;
+	 			matT[indexMap(j, i, nDiagonais)] = termo;	 			
+	 		}
+	 	}
+	}
+}
 
-  #ifdef DEBUG
-  for (int lin=0;lin < SL->n; ++lin){
-    printf("\n"); 
-    for (int col=0;col < SL->n; ++col){
-      printf("%.5g |",SL->A[indexa(lin,col,nDiagonais, SL->n)]);
+void calcMatrizTransp(SistLinear_t *SL, SistLinear_t *SLtransp){
+  SLtransp->A[0] = 0.0;
+  for (unsigned int i=1;i <= SL->n;++i){
+    for (unsigned int j=1;j <= SL->n;++j){
+      SLtransp->A[indexMap(j,i, SL->nDiagonais)] = SL->A[indexMap(i,j, SL->nDiagonais)]; 
     }
   }
-  #endif
-  
-  for (unsigned int i=0;i < SL->n;++i)
-    SL->b[i] = generateRandomB(nDiagonais);
+}
+
+void calcularAtxB(unsigned int k, unsigned int n, double *matrizTransp, double *vb, double *atvb)
+{
+  double at;
+	double soma;
+
+	for (unsigned int i = 1; i <= n ; ++i)
+	{
+		soma = 0.0;
+	  for (unsigned int j = 1; j <= n; ++j)
+		{
+			at = matrizTransp[indexMap(i,j,k)];
+			soma += at * vb[j-1];
+		}
+		atvb[i] = soma;
+	}
 
 }
 
+// o calculo de A*At vai gerar uma matriz com 2x mais diagonais nao nulas
+void calcularMatrizAtxA( SistLinear_t   *restrict SL ,double *  matT ,SistLinear_t   *restrict novoSisLin )
+{ 
+  double a;
+	double at;
+	double soma;
+	unsigned int simk = (2*SL->nDiagonais) - 1;
 
-//Função que dado o indice da matriz, retorna o indice do elemento no vetor
+	for (unsigned int i = 1; i < (SL->n + 1); ++i)
+	{
+		for (unsigned int j = 1; j < (SL->n + 1); ++j)
+		{
+			if ((j > i ? (j - i) : (i - j)) <= (simk / 2))
+	 		{
+	 			soma = 0.0;
+	 			for (unsigned int k = 1; k < (SL->n + 1); ++k)
+	 			{
+	 				at = matT[indexMap(i,k,SL->nDiagonais)]; 
+	 				a = SL->A[indexMap(k,j, SL->nDiagonais)];
+	 				soma += at * a;
+	 			}
+
+	 			novoSisLin->A[indexMap(i, j, simk)] = soma;
+	 		} 
+		}
+	}
+}
+
 
 /**
- * @brief Funcao para indexar a matriz, dado que sao armazenadas apenas as k-diagonais
- * [0, DIAG_PRINC, DIAG_INFS, DIAG_SUPS]
- * @param i - Linha  
- * @param j - Coluna
- * @param nDiagonais - N totais de diagonais na matriz 
- * @param tamSL - Dimensao do SL
- * @return unsigned int 
+ * @brief - Printa o vetor V no arquivo arqSaida
+ *
+ * @param v - vetor
+ * @param n - tamanho do vetor
+ * @param arqSaida - arquivo de saida
  */
-unsigned int indexa (int i, int j, int nDiagonais, unsigned int tamSL) {
-  // como a primeira diagonal eh a diagonal principal
-  unsigned int distDiagPrinc = ABS(i - j);
-  unsigned int diagonalIdx = (i > j) ? 1 : 0;
-  unsigned int nElemDiag = tamSL - distDiagPrinc; 
-  unsigned int meuIdx=0;
-  
-  for (unsigned int dist = distDiagPrinc;dist > 1 ;--dist){
-    meuIdx+= (tamSL - dist);
+void prnVetorArq(double *v, unsigned int n, FILE *arqSaida)
+{
+  int i;
+  fprintf(arqSaida, "\n");
+  for (i = 0; i < n; ++i)
+  {
+    fprintf(arqSaida, "%.15g ", v[i]);
   }
-
-  // posicao igual a 0 
-  if (distDiagPrinc > (nDiagonais / 2)){
-    return 0; 
-  }
-  if (j == i)
-    return (i+1); //posicao 0 guardada pro 0 
-  // uma das diagonais inferiores
-  else if (i > j){
-    unsigned int comecoBloco = tamSL;
-    return(comecoBloco + meuIdx + i ); 
-  // uma das diagonais superiores
-  }else {
-    unsigned int comecoBloco = calcElementoDiagonaisInf(tamSL, nDiagonais);
-    comecoBloco += tamSL; 
-    return ( comecoBloco + meuIdx + j);
-  }
+  fprintf(arqSaida, "\n");
 }
+
+
 /***********************************************************************/
 
 void prnVetor(double *v, unsigned int n)
@@ -211,19 +213,13 @@ void prnVetor(double *v, unsigned int n)
  * @param n - Tamanho do vetor
  * @return double - Produto dos vetores
  */
-double multiplicaVetores(double *vetA, double *vetB, unsigned int n)
+double multiplicaVetores( double  *restrict vetA,  double  *restrict vetB, unsigned int n)
 {
   double produto = 0;
 
   for (int i = 0; i < n; ++i)
   {
     produto = produto + vetA[i] * vetB[i];
-    // Testa valores inválidos.
-    if (isnan(produto) || isinf(produto))
-    {
-      fprintf(stderr, "Erro variavel invalida: produto(multiplicaVetores): %g é NaN ou +/-Infinito\n", produto);
-      exit(1);
-    }
   }
   return produto;
 }
@@ -235,7 +231,7 @@ double multiplicaVetores(double *vetA, double *vetB, unsigned int n)
  * @param b vetor destino
  * @param n tamanho do vetor
  */
-void copiaVetor(double *a, double *b, unsigned int n)
+void copiaVetor( double  *restrict a,  double  *restrict b, unsigned int n)
 {
   int i;
 

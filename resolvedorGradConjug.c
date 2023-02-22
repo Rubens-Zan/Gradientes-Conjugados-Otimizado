@@ -6,44 +6,36 @@
 #include <string.h>
 #include <math.h>
 
+#define UNROLL 8
+#define STRIDE 8
+#define ALIGNMENT 16
+#define ZERO 1e-30
 
 
-/// TODO: OTIMIZAR
 /**
  * @brief Função para calcular o residuo original conforme A e b originais
- * 
+ *
  * @param A - Coeficientes A originais
  * @param b - Coeficientes B originais
  * @param x - Solução final
  * @param n - Tamanho do Sistema Linear
  * @param residuo - Vetor a receber o residuo
  */
-void calculaResiduoOriginal(double**A,  double*b, double *x, int n,double *residuo)
+static inline void calculaResiduoOriginal(SistLinear_t *SL, double *x, double *residuo)
 {
+    memcpy(residuo, SL->b, (SL->n) * sizeof(double)); // residuo = b
 
-    // Percorre a matriz,  
-    for (int i = 0; i < n; ++i)
-    {
-        double soma = 0.0;
-        for (int j = 0; j < n; ++j)
-        {
-            // realiza a soma das linhas, 
-            soma = soma + A[i][j] * x[j];
+    //! Unroll and Jam residuo[]
+    for (unsigned int i = 0; i < ((SL->n) - ((SL->n) % UNROLL)); i += UNROLL) // r = b - Ax
+        for (unsigned int j = 0; j < (SL->n); ++j)
+            for (unsigned int k = 0; k < UNROLL; ++k)
+                residuo[i + k] -= SL->A[indexMap(i + k + 1, j + 1, SL->nDiagonais)] * x[j+1];
 
-            // (Teste para ver se não foi gerado um NaN ou um número infinito)
-            if (isnan(soma) || isinf(soma))
-            {
-                fprintf(stderr, "Erro soma(calculaResiduoOriginal): %g é NaN ou +/-Infinito\n", soma);
-                exit(1);
-            } 
-        }
-        //e tira do resíduo.
-        residuo[i] = b[i] - soma;
-    }
+    //! remaider loop
+    for (unsigned int i = ((SL->n) - ((SL->n) % UNROLL)); i < (SL->n); ++i)
+        for (unsigned int j = 0; j < (SL->n); ++j)
+            residuo[i] -= SL->A[indexMap(i + 1, j + 1, SL->nDiagonais)] * x[j+1];
 }
-
-
-
 
 /***********************METODOS iguais nos dois tipos de resolução*****************************************/
 /**
@@ -58,7 +50,7 @@ void calculaResiduoOriginal(double**A,  double*b, double *x, int n,double *resid
  * @param n - dimensao do sistema linear
  * @return double - Proximo x calculado
  */
-void calcX(double *proxX, double *xAnt, double alpha, double *p, int n)
+static inline void calcX(double *restrict proxX, double *restrict xAnt, double alpha, double *restrict p, int n)
 {
     for (int i = 0; i < n; ++i)
     {
@@ -78,18 +70,23 @@ void calcX(double *proxX, double *xAnt, double alpha, double *p, int n)
  * @param residuo - vetor de residuo
  * @param n - dimensao do sistema linear
  */
-void calcResiduo(double *residuoAnterior, double alpha, double **A, double *p, double *residuo, int n)
+static inline void calcResiduo(double *restrict residuoAnterior, double alpha, SistLinear_t *SL, double *restrict p, double *restrict residuo)
 {
     // alpha * A * p<k>
-    for (int i = 0; i < n; ++i)
+    for (int i = 0; i < SL->n; ++i)
     {
         double somaI = 0;
-        for (int j = 0; j < n; j++)
+        for (int j = 0; j < SL->n; j++)
         {
-            somaI = somaI + A[i][j] * p[j];
+            somaI = somaI + SL->A[indexMap(i + 1, j + 1, SL->nDiagonais)] * p[j]; // somaI = somaI + A[i][j] * p[j];
         }
 
         residuo[i] = residuo[i] - alpha * somaI;
+        if (isnan(residuo[i]) || isinf(residuo[i]))
+        {
+            printf("Erro (calcResiduo): %g é NaN ou +/-Infinito, Linha: %i\n", residuo[i], i);
+            //     exit(1);
+        }
     }
 }
 
@@ -98,18 +95,13 @@ void calcResiduo(double *residuoAnterior, double alpha, double **A, double *p, d
 /**
  * @brief Inicializa a matriz M com a diagonal principal invertida de A
  * @param SL - Sistema Linear
- * @param M - Matriz pre condicionadora a ser armazenada a 1/ diagonal 
+ * @param M - Matriz pre condicionadora a ser armazenada a 1/ diagonal
  */
-void inicializaPreCondJacobi(SistLinear_t *SL, double *M)
+static inline void inicializaPreCondJacobi(SistLinear_t *SL, double *M)
 {
     for (int i = 0; i < SL->n; ++i)
     {
-        M[i] = (double)1 / SL->A[i+1]; // gera vetor com diagonais principal do SL
-        if (isnan(M[i]) || isinf(M[i]))
-        {
-            fprintf(stderr, "Erro M[i](inicializaPreCondJacobi): %g é NaN ou +/-Infinito, Linha: %i\n", M[i], i);
-            exit(1);
-        }
+        M[i] = (double)1 / SL->A[(indexMap(i + 1, i + 1, SL->nDiagonais))]; // gera vetor com diagonais principal do SL
     }
 }
 
@@ -118,29 +110,15 @@ void inicializaPreCondJacobi(SistLinear_t *SL, double *M)
  * @param SL - O sistema linear que vai ser aplicado o pre condicionamento
  * @param M - A matriz M^-1 a ser aplicada
  */
-void aplicaPreCondicSL(SistLinear_t *SL, double *M)
+static inline void aplicaPreCondicSL(SistLinear_t *SL, double *M)
 {
-    for (int i = 0; i < SL->n; i++)
+    SL->A[0] = 0.0;
+    for (unsigned int i = 1; i <= SL->n; ++i)
     {
-        SL->b[i] = SL->b[i] * M[i];
-        for (int j = 0; j < SL->n; j++)
-        {
-            SL->A[indexa(i,j, SL->nDiagonais, SL->n)] = SL->A[indexa(i,j,SL->nDiagonais,SL->n)] * M[i]; // aplica pre condicionador se for na diagonal
-        }
+        SL->A[indexMap(i, i, SL->nDiagonais)] = SL->A[indexMap(i, i, SL->nDiagonais)] * M[i - 1];
+        SL->b[i - 1] = SL->b[i - 1] * M[i - 1];
     }
 }
-
-/**
- * @brief Inicializa o chute inicial com 0
- * @param x - vetor solução
- * @param n - Tamanho do SL
- */
-void inicializaSol(double *x, unsigned int n)
-{
-    for (int i = 0; i < n; ++i)
-        x[i] = 0;
-}
-
 
 /**
  * @brief Calcula a proxima direcao de busca p<k>
@@ -153,12 +131,11 @@ void inicializaSol(double *x, unsigned int n)
  * @param direcAnterior - Direcao anterior calculada
  * @return double
  */
-void calcProxDirecBusca(double *proxDir, double *z, double beta, double *direcAnterior, int n)
+static inline void calcProxDirecBusca(double *restrict proxDir, double *restrict z, double beta, double *restrict direcAnterior, int n)
 {
     for (int i = 0; i < n; ++i)
     {
-        proxDir[i] = beta * proxDir[i] + z[i] ;
-
+        proxDir[i] = beta * proxDir[i] + z[i];
     }
 }
 
@@ -176,54 +153,46 @@ void calcProxDirecBusca(double *proxDir, double *z, double beta, double *direcAn
  * @param n - dimensão da matriz
  * @return double
  */
-double calcAlphaPreCond(double *resid, double **A, double *p, double *z, int n)
+static inline double calcAlphaPreCond(double *restrict resid, SistLinear_t *SL, double *restrict p, double *restrict z)
 {
     double alpha = 0;
-    double *pTxA = (double *)malloc(sizeof(double) * n); // vetor aux para calculo de p^T * A
+    double *pTxA = (double *)malloc(sizeof(double) * SL->n); // vetor aux para calculo de p^T * A
 
-    double residTxZ = multiplicaVetores(z, resid, n);
+    double residTxZ = multiplicaVetores(z, resid, SL->n);
 
-
-    //Percorre a matriz SL->A e o vetor D
-    for (int i = 0; i < n; ++i)  
+    // Percorre a matriz SL->A e o vetor D
+    for (int i = 0; i < SL->n; ++i)
     {
         double soma = 0.0;
-        for (int j = 0; j < n; ++j)
+        for (int j = 0; j < SL->n; ++j)
         {
-            //calcula o iésimo elemento do vetor_resultante (esse vetor é chamado de 'z' no livro M.Cristina C. Cunha)
-            soma = soma + A[i][j] * p[j];
-
-            // Teste para ver se não foi gerado um NaN ou um número infinito
-            if (isnan(soma) || isinf(soma))
-            {
-                fprintf(stderr, "Erro soma(calcularDenominadorEscalarA): %g é NaN ou +/-Infinito\n", soma);
-                exit(1);
-            }
+            // calcula o iésimo elemento do vetor_resultante (esse vetor é chamado de 'z' no livro M.Cristina C. Cunha)
+            soma = soma + SL->A[(indexMap(i + 1, j + 1, SL->nDiagonais))] * p[j]; //  soma + A[i][j] * p[j];
         }
         // O iésimo elemento do vetor resultante recebe soma.
         pTxA[i] = soma;
+
+        if (isnan(pTxA[i]) || isinf(pTxA[i]))
+        {
+            printf("Erro (calcAlphaPreCond pTxA): %g é NaN ou +/-Infinito, Linha: %i\n", pTxA[i], i);
+            //     exit(1);
+        }
     }
 
     // Tendo o vetor resultante, agora é só multiplicar D^t * vetor_resultante.
-    // O cálculo entre um vetor transposto e um vetor normal gera uma matriz de 1x1, ou seja, um número real.  
+    // O cálculo entre um vetor transposto e um vetor normal gera uma matriz de 1x1, ou seja, um número real.
     double pTxAxP = 0.0;
-    for (int i = 0; i < n; ++i)
+    for (int i = 0; i < SL->n; ++i)
     {
         pTxAxP = pTxAxP + p[i] * pTxA[i];
-        // Teste para ver se não foi gerado um NaN ou um número infinito
-        if (isnan(pTxAxP) || isinf(pTxAxP)){
-            fprintf(stderr, "Erro pTxAxP(calcAlphaPreCond): %g é NaN ou +/-Infinito\n", pTxAxP);
-            exit(1);
+        if (isnan(pTxAxP) || isinf(pTxAxP))
+        {
+            printf("Erro (calcAlphaPreCond pTxAxP): %g é NaN ou +/-Infinito, Linha: %i\n", pTxAxP, i);
+            //     exit(1);
         }
     }
 
     alpha = residTxZ / pTxAxP;
-    // Verificação se resultou em NaN ou +/- infinito
-    if (isnan(alpha) || isinf(alpha))
-    {
-        fprintf(stderr, "Erro variavel invalida: alpha(calcAlphaPreCond): %g é NaN ou +/-Infinito\n", alpha);
-        exit(1);
-    }
     free(pTxA);
 
     return alpha;
@@ -241,37 +210,51 @@ double calcAlphaPreCond(double *resid, double **A, double *p, double *z, int n)
  * @param n - tamanho do SL
  * @return double
  */
-double calcBetaPreCond(double *resid, double *residAnt, double *z, double *zAnt, int n)
+static inline double calcBetaPreCond(double *restrict resid, double *restrict residAnt, double *restrict z, double *restrict zAnt, int n)
 {
     double beta = 0;
     double residTxZ = multiplicaVetores(z, resid, n);
     double zAntxResidAnt = multiplicaVetores(zAnt, residAnt, n);
-
     beta = residTxZ / zAntxResidAnt;
-    // Verificação se resultou em NaN ou +/- infinito
+
     if (isnan(beta) || isinf(beta))
     {
-        fprintf(stderr, "Erro variavel invalida: beta(calcbetaPreCond): %g é NaN ou +/-Infinito\n", beta);
-        exit(1);
+        printf("Erro (calcBetaPreCond): %g é NaN ou +/-Infinito\n", beta);
+        //     exit(1);
     }
     return beta;
 }
 
 /**
  * @brief - Calcula o próximo Z
- * 
+ *
  * z = M^-1 * residuo
- * 
+ *
  * @param z - z a ser calculado
  * @param matPreConj
  * @param residuo
  * @param n - Tamanho do vetor
  */
-void calcZ(double *z, double *matPreConj, double *residuo, unsigned int n)
+static inline void calcZ(double *z, SistLinear_t *SL, double *residuo, unsigned int n)
 {
-    for (int i = 0; i < n; ++i)
+    for(unsigned int a = 0; a < (1 + (n ) - ((n + 1) % UNROLL)); a+=UNROLL)	//! z = Av
     {
-        z[i] = matPreConj[i] * residuo[i];
+        for(unsigned int b = 0; b < (n); b++)
+        {
+            for(unsigned int c = 0; c < UNROLL; ++c)
+            {
+                z[a + c] += SL->A[indexMap(a+c+1,b+1,SL->nDiagonais)] * residuo[b];
+            }
+        }
+    }
+
+    //!remaider loop
+    for(unsigned int a = (1 + (n) - ((n + 1) % UNROLL)); a < n; ++a)
+    {
+        for(unsigned int b = 0; b < (n); ++b)
+        {
+            z[a] += SL->A[indexMap(a+1,b+1,SL->nDiagonais)] * residuo[b];
+        }
     }
 }
 
@@ -288,123 +271,167 @@ void calcZ(double *z, double *matPreConj, double *residuo, unsigned int n)
  */
 void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *arqSaida)
 {
-    // double **Aoriginal = alocarMatriz(SL->n, SL->n); // Matriz original
-    double *boriginal = (double *)malloc(sizeof(double) * SL->n);  // coeficientes b originais
+    //! Variáveis:
+	double alpha;			//! s
+	double beta;			//! m
+	double normx;			//! ||x||
+	double relerr;			//! erro relativo atual
+	double aux0, aux1;		//! aux, aux1
+	double *xAnt;		//! vetor x anterior
+	double *v;			//! v
+	double *z;			    //! z
+	double *y;			    //! y
+	unsigned int numiter;	//! numero de iteracoes
+	unsigned int indxmax;	//! indice no qual max(|xatual - xold|)
+	double soma;			//! variavel auxiliar nos lacos
+	//!
 
-    // double **novoA = alocarMatriz(SL->n, SL->n); // Matriz original
-    double *novoB = (double *)malloc(sizeof(double) * SL->n);  // coeficientes b originais
+    double *simmat = SL->A;
+    unsigned int n =SL->n;
+    double *atvb = SL->b;
+    double *res = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));;
+    double *vetx =aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	double k = SL->nDiagonais;
 
-    double alpha, beta;
-    double *resid = (double *)malloc(sizeof(double) * SL->n);    // matriz de residuo
-    double *residAnt = (double *)malloc(sizeof(double) * SL->n); // matriz de residuo anterior
-    double *direc = (double *)malloc(sizeof(double) * SL->n);    // matriz de direcao de busca
-    double *direcAnt = (double *)malloc(sizeof(double) * SL->n); // matriz de direcao anterior
-    double *xAnt = (double *)malloc(sizeof(double) * SL->n);     // matriz de chute anterior
-    double *z = (double *)malloc(sizeof(double) * SL->n);        // matriz de z
-    double *zAnt = (double *)malloc(sizeof(double) * SL->n);     // matriz de z antigo
-    double *x = (double *)malloc(sizeof(double) * SL->n);        // matriz de soluções
-    double *matJacobiInvert = (double *)malloc(sizeof(double) * SL->n);
+    indxmax = 0;
 
-    double tMedioIter, tempoResid, tempoPreCond, tempoInicio;
-    tMedioIter = 0;
-    // tempoInicio = timestamp();
+	//! Algoritmo:
+	z = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	xAnt = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	memcpy(xAnt, vetx, (n + 1)*sizeof(double));	//! x0 = 0
+	memcpy(res, atvb, (n + 1)*sizeof(double));		//! r = b
+	y = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	v = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	
+	aux0 = 0.0;
+	for(unsigned int i = 1; i < (n + 1); i++)		//! v = M-1b, y = M-1r 
+	{
+		v[i] = (atvb[i] / simmat[indexMap(i,i,k)]);
+		y[i] = (res[i] / simmat[indexMap(i,i,k)]);
+		aux0 += y[i] * res[i];	//! aux = ytr
+	}
+	// LIKWID_MARKER_START("op1");
+	
+	numiter = 0;	
+	while(numiter < maxIt) 									//! para k = 0 : max, faca
+	{
+		
+		soma =  0.0;
+		//!Unroll and Jam z = Av e soma =  vtz
+		memset(z, 0, (n + 1));
+		for(unsigned int i =  1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	//! z = Av
+		{
+			for(unsigned int j = 1; j < (n + 1); j++)
+			{
+				for(unsigned int c = 0; c < STRIDE; ++c)
+				{
+					z[i + c] += simmat[indexMap((i + c), j, k)] * v[j];
+				}
+			}
+			for(unsigned int c = 0; c < STRIDE; ++c)
+			{
+				soma += z[i + c] * v[i + c];	//! calcula vtz
+			}
+		}
 
-    int it;
+		//!remaider loop
+		for(unsigned int i =  (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)
+		{
+			for(unsigned int j = 1; j < (n + 1); ++j)
+			{
+				z[i] += simmat[indexMap(i,j,k)] * v[j];
+			}
+			soma += z[i] * v[i];
+		}
 
-    /**/
-    inicializaPreCondJacobi(SL, matJacobiInvert);
+		//! s = aux/vtz
+		alpha =  (fabs(soma) < ZERO) ? 0.0 : (aux0 / soma);
 
+		normx = 0.0;
+		// CALCULO DA NORMA
+		//!Unroll and Jam do calculo da norma e x = xold
+		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
+		{
+			for(unsigned int j = 0; j < STRIDE; ++j)
+			{
+				vetx[i + j] += (alpha * v[i + j]);			//! xk+1 = xk + sv
+				if (normx < fabs(vetx[i + j] - xAnt[i + j]))	//! calcula ||x||
+				{
+					normx = fabs(vetx[i + j] - xAnt[i + j]);
+					indxmax = i+j; 
+				}
+			} 
+		}
+		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//!remainder loop
+		{
+			vetx[i] += (alpha * v[i]);			//! xk+1 = xk + sv
+			if (normx < fabs(vetx[i] - xAnt[i]))	//! calcula ||x||
+			{
+				normx = fabs(vetx[i] - xAnt[i]);
+				indxmax = i; 
+			}  
+		}
+		
+		//!Unroll and Jam de r = r - sz e y = M-1r
+		// CALCULO DO RESID E Y
+		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
+		{
+			for(unsigned int j = 0; j < STRIDE; ++j)
+			{
+				res[i + j] -= (alpha * z[i + j]);
+				y[i + j] = (res[i + j] / simmat[indexMap(i+j,i+j,k)]);
+			} 
+		}
+		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//!remainder loop
+		{
+			res[i] -= (alpha * z[i]);
+			y[i] = (res[i] / simmat[indexMap(i,i,k)]);  
+		}
+		aux1 = 0.0;
 
-    // copiaMatriz(SL->A,Aoriginal, SL->n);
-    copiaVetor(SL->b, boriginal, SL->n); 
+		//!Unroll and Jam de aux1 = ytr
+		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
+		{
+			for(unsigned int j = 0; j < STRIDE; ++j)
+			{
+				aux1 += y[i + j] * res[i + j];
+			} 
+		}
+		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//!remainder loop
+		{
+			aux1 += y[i] * res[i];  
+		}
+		
+		//! m = aux1 / aux
+		beta =  (aux1 / aux0);
+		aux0 = aux1;
 
-    calcularAtxB(SL,novoB);
-    // calcularMatrizAtxA(SL, novoA);
+		//!Unroll and Jam de v = y + mv
+		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
+		{
+			for(unsigned int j = 0; j < STRIDE; ++j)
+			{
+				v[i + j] = y[i + j] + (beta * v[i + j]);
+			} 
+		}
+		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//!remainder loop
+		{
+			v[i] = y[i] + (beta * v[i]);  
+		}	
+		fprintf(arqSaida, "# iter %u: %.15g\n", numiter, normx);
 
-    // copiaMatriz(novoA,SL->A, SL->n);
-    copiaVetor(novoB, SL->b, SL->n); 
+		//! xold = x
+		memcpy(xAnt, vetx, (n + 1)*sizeof(double));
+		//! relerr = max(|Xi - Xi-1|) / Xi
+		relerr =(normx / fabs(vetx[indxmax]));
+		//!
+		++numiter;
+	};
 
-    
-    // (M^-1) * A
-    // (M^-1) * b
-    aplicaPreCondicSL(SL, matJacobiInvert);
-
-    // tempoPreCond = timestamp() - tempoInicio;
-    inicializaSol(x, SL->n);
-    // residuo = b
-    copiaVetor(SL->b, resid, SL->n); // como x inicial igual a 0, desconsidero o r = b - (A * x)
-    // calcula z
-    calcZ(z, matJacobiInvert, resid, SL->n);
-    // direc = z
-    copiaVetor(z, direc, SL->n);
-
-    // for (it = 0; it < maxIt; ++it)
-    // {
-    //     double tIterInicio = timestamp();
-
-    //     // ALPHA = z * r / pT * A * p
-    //     alpha = calcAlphaPreCond(resid, SL->A, direc, z, SL->n);
-    //     // calcula novo x
-    //     copiaVetor(x, xAnt, SL->n); // xant = x
-    //     calcX(x, xAnt, alpha, direc, SL->n);
-        
-    //     double maiorErroAbs; 
-    //     double normaMaxRel = normaMaxRelat(x, xAnt, SL->n, &maiorErroAbs);
-    //     fprintf(arqSaida, "# iter %d: ||%.15g||\n", it, maiorErroAbs);
-    //     // calcula novo residuo
-    //     copiaVetor(resid, residAnt, SL->n);
-    //     calcResiduo(residAnt, alpha, SL->A, direc, resid, SL->n);
-
-    //     // if erro
-    //     // o erro aproximado em x após a k-ésima iteração (max|xi - xi-1|);
-    //     if (tol != 0 && tol > normaMaxRel)
-    //     {
-    //         tMedioIter += timestamp() - tIterInicio;
-    //         break;
-    //     }
-    //     // z0 = z
-    //     copiaVetor(resid, zAnt, SL->n);
-    //     // calcula z
-    //     calcZ(z, matJacobiInvert, resid, SL->n);
-    //     // beta = rt * z / rtant *zant
-    //     // tb usa
-    //     beta = calcBetaPreCond(resid, residAnt, z, zAnt, SL->n);
-    //     // calcula prox direcao
-    //     copiaVetor(direc, direcAnt, SL->n); // dAnt = d
-    //     calcProxDirecBusca(direc, z, beta, direcAnt, SL->n);
-
-    //     tMedioIter += timestamp() - tIterInicio;
-    // }
-
-    // // restaura A e b originais
-    // copiaMatriz(SL->A,Aoriginal, SL->n);
-    // copiaVetor(SL->b, boriginal, SL->n); 
-
-    // tempoResid = timestamp();
-    // calculaResiduoOriginal(SL->A, SL->b, x, SL->n, resid);
-    // fprintf(arqSaida, "# residuo: || %.15g || \n", normaL2Residuo(resid, SL->n));
-    // tempoResid = timestamp() - tempoResid; 
-
-    // fprintf(arqSaida, "# Tempo PC: %.15g \n", tempoPreCond);
-    // tMedioIter = tMedioIter / it;
-    // fprintf(arqSaida, "# Tempo iter: %.15g \n", tMedioIter);
-
-    // fprintf(arqSaida, "# Tempo residuo: %.15g \n", tempoResid);
-    // fprintf(arqSaida, "# \n");
-    // fprintf(arqSaida, "%d", SL->n);
-    // prnVetorArq(x, SL->n, arqSaida);
-
-    //  liberarMatriz(Aoriginal);
-    // free(boriginal); 
-    // liberarMatriz(novoA);
-    // free(novoB); 
-    // free(resid);
-    // free(residAnt);
-    // free(direc);
-    // free(direcAnt);
-    // free(xAnt);
-    // free(x);
-    // free(z);
-    // free(zAnt);
-    // free(matJacobiInvert);
+	// LIKWID_MARKER_STOP("op1");
+	
+	free(v);
+	free(z);
+	free(y);
+	free(xAnt);
 }
