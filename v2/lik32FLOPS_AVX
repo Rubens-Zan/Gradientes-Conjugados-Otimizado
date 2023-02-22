@@ -1,0 +1,51 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+Algoritmo executado com J (A:SEM, J:JACOBI) e resultados gravados no arquivo _bench/out32FLOPS_AVX 
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.40803744 GHz,
+TABLE,Region op1,Group 1 Raw,FLOPS_AVX,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.000186,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,2400817
+CPU_CLK_UNHALTED_CORE,FIXC1,711394
+CPU_CLK_UNHALTED_REF,FIXC2,639142
+FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE,PMC0,0
+FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE,PMC1,0
+TABLE,Region op1,Group 1 Metric,FLOPS_AVX,6
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0002,
+Runtime unhalted [s],0.0002,
+Clock [MHz],3793.3001,
+CPI,0.2963,
+Packed SP MFLOP/s,0,
+Packed DP MFLOP/s,0,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.40803744 GHz,
+TABLE,Region op2,Group 1 Raw,FLOPS_AVX,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.000002,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,16020
+CPU_CLK_UNHALTED_CORE,FIXC1,15858
+CPU_CLK_UNHALTED_REF,FIXC2,14768
+FP_ARITH_INST_RETIRED_256B_PACKED_SINGLE,PMC0,0
+FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE,PMC1,0
+TABLE,Region op2,Group 1 Metric,FLOPS_AVX,6
+Metric,Core 3,
+Runtime (RDTSC) [s],1.911040e-06,
+Runtime unhalted [s],4.653118e-06,
+Clock [MHz],3659.5787,
+CPI,0.9899,
+Packed SP MFLOP/s,0,
+Packed DP MFLOP/s,0,

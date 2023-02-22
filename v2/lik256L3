@@ -1,0 +1,59 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+Algoritmo executado com J (A:SEM, J:JACOBI) e resultados gravados no arquivo _bench/out256L3 
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408034741 GHz,
+TABLE,Region op1,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.006587,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,107276400
+CPU_CLK_UNHALTED_CORE,FIXC1,24715520
+CPU_CLK_UNHALTED_REF,FIXC2,22217750
+L2_LINES_IN_ALL,PMC0,6107
+L2_TRANS_L2_WB,PMC1,623
+TABLE,Region op1,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0066,
+Runtime unhalted [s],0.0073,
+Clock [MHz],3791.1738,
+CPI,0.2304,
+L3 load bandwidth [MBytes/s],59.3390,
+L3 load data volume [GBytes],0.0004,
+L3 evict bandwidth [MBytes/s],6.0534,
+L3 evict data volume [GBytes],3.987200e-05,
+L3 bandwidth [MBytes/s],65.3924,
+L3 data volume [GBytes],0.0004,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408034741 GHz,
+TABLE,Region op2,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.000049,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,748622
+CPU_CLK_UNHALTED_CORE,FIXC1,196427
+CPU_CLK_UNHALTED_REF,FIXC2,176506
+L2_LINES_IN_ALL,PMC0,864
+L2_TRANS_L2_WB,PMC1,80
+TABLE,Region op2,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],4.937736e-05,
+Runtime unhalted [s],0.0001,
+Clock [MHz],3792.6758,
+CPI,0.2624,
+L3 load bandwidth [MBytes/s],1119.8655,
+L3 load data volume [GBytes],0.0001,
+L3 evict bandwidth [MBytes/s],103.6912,
+L3 evict data volume [GBytes],5.120000e-06,
+L3 bandwidth [MBytes/s],1223.5567,
+L3 data volume [GBytes],0.0001,

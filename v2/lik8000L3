@@ -1,0 +1,59 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+Algoritmo executado com J (A:SEM, J:JACOBI) e resultados gravados no arquivo _bench/out8000L3 
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.407979685 GHz,
+TABLE,Region op1,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],6.001894,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,101491800000
+CPU_CLK_UNHALTED_CORE,FIXC1,22603110000
+CPU_CLK_UNHALTED_REF,FIXC2,20324400000
+L2_LINES_IN_ALL,PMC0,5964358
+L2_TRANS_L2_WB,PMC1,892326
+TABLE,Region op1,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],6.0019,
+Runtime unhalted [s],6.6324,
+Clock [MHz],3790.0720,
+CPI,0.2227,
+L3 load bandwidth [MBytes/s],63.5997,
+L3 load data volume [GBytes],0.3817,
+L3 evict bandwidth [MBytes/s],9.5151,
+L3 evict data volume [GBytes],0.0571,
+L3 bandwidth [MBytes/s],73.1149,
+L3 data volume [GBytes],0.4388,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.407979685 GHz,
+TABLE,Region op2,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.046424,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,720241500
+CPU_CLK_UNHALTED_CORE,FIXC1,174717300
+CPU_CLK_UNHALTED_REF,FIXC2,157082400
+L2_LINES_IN_ALL,PMC0,19247
+L2_TRANS_L2_WB,PMC1,5855
+TABLE,Region op2,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0464,
+Runtime unhalted [s],0.0513,
+Clock [MHz],3790.5775,
+CPI,0.2426,
+L3 load bandwidth [MBytes/s],26.5336,
+L3 load data volume [GBytes],0.0012,
+L3 evict bandwidth [MBytes/s],8.0716,
+L3 evict data volume [GBytes],0.0004,
+L3 bandwidth [MBytes/s],34.6052,
+L3 data volume [GBytes],0.0016,

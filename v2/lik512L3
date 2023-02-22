@@ -1,0 +1,59 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+Algoritmo executado com J (A:SEM, J:JACOBI) e resultados gravados no arquivo _bench/out512L3 
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.407993844 GHz,
+TABLE,Region op1,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.025594,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,421626200
+CPU_CLK_UNHALTED_CORE,FIXC1,95602040
+CPU_CLK_UNHALTED_REF,FIXC2,85955010
+L2_LINES_IN_ALL,PMC0,11691
+L2_TRANS_L2_WB,PMC1,1635
+TABLE,Region op1,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0256,
+Runtime unhalted [s],0.0281,
+Clock [MHz],3790.4849,
+CPI,0.2267,
+L3 load bandwidth [MBytes/s],29.2343,
+L3 load data volume [GBytes],0.0007,
+L3 evict bandwidth [MBytes/s],4.0884,
+L3 evict data volume [GBytes],0.0001,
+L3 bandwidth [MBytes/s],33.3227,
+L3 data volume [GBytes],0.0009,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.407993844 GHz,
+TABLE,Region op2,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.000192,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,2967867
+CPU_CLK_UNHALTED_CORE,FIXC1,737328
+CPU_CLK_UNHALTED_REF,FIXC2,662714
+L2_LINES_IN_ALL,PMC0,1138
+L2_TRANS_L2_WB,PMC1,147
+TABLE,Region op2,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0002,
+Runtime unhalted [s],0.0002,
+Clock [MHz],3791.6949,
+CPI,0.2484,
+L3 load bandwidth [MBytes/s],378.9396,
+L3 load data volume [GBytes],0.0001,
+L3 evict bandwidth [MBytes/s],48.9491,
+L3 evict data volume [GBytes],9.408000e-06,
+L3 bandwidth [MBytes/s],427.8887,
+L3 data volume [GBytes],0.0001,

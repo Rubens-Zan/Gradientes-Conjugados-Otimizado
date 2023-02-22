@@ -1,0 +1,59 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+Algoritmo executado com J (A:SEM, J:JACOBI) e resultados gravados no arquivo _bench/out32L3 
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.406219528 GHz,
+TABLE,Region op1,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.000186,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,2400817
+CPU_CLK_UNHALTED_CORE,FIXC1,710443
+CPU_CLK_UNHALTED_REF,FIXC2,638716
+L2_LINES_IN_ALL,PMC0,2001
+L2_TRANS_L2_WB,PMC1,134
+TABLE,Region op1,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0002,
+Runtime unhalted [s],0.0002,
+Clock [MHz],3788.7337,
+CPI,0.2959,
+L3 load bandwidth [MBytes/s],688.9065,
+L3 load data volume [GBytes],0.0001,
+L3 evict bandwidth [MBytes/s],46.1337,
+L3 evict data volume [GBytes],8.576000e-06,
+L3 bandwidth [MBytes/s],735.0402,
+L3 data volume [GBytes],0.0001,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.406219528 GHz,
+TABLE,Region op2,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.000002,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,16016
+CPU_CLK_UNHALTED_CORE,FIXC1,15919
+CPU_CLK_UNHALTED_REF,FIXC2,14342
+L2_LINES_IN_ALL,PMC0,526
+L2_TRANS_L2_WB,PMC1,35
+TABLE,Region op2,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],1.846810e-06,
+Runtime unhalted [s],4.673510e-06,
+Clock [MHz],3780.7564,
+CPI,0.9939,
+L3 load bandwidth [MBytes/s],18228.1881,
+L3 load data volume [GBytes],3.366400e-05,
+L3 evict bandwidth [MBytes/s],1212.9022,
+L3 evict data volume [GBytes],2.240000e-06,
+L3 bandwidth [MBytes/s],19441.0903,
+L3 data volume [GBytes],3.590400e-05,

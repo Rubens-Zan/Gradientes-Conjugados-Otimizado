@@ -1,0 +1,59 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+Algoritmo executado com J (A:SEM, J:JACOBI) e resultados gravados no arquivo _bench/out4000L3 
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.407751998 GHz,
+TABLE,Region op1,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],1.505975,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,25396100000
+CPU_CLK_UNHALTED_CORE,FIXC1,5667282000
+CPU_CLK_UNHALTED_REF,FIXC2,5095246000
+L2_LINES_IN_ALL,PMC0,2801633
+L2_TRANS_L2_WB,PMC1,432712
+TABLE,Region op1,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],1.5060,
+Runtime unhalted [s],1.6631,
+Clock [MHz],3790.3355,
+CPI,0.2232,
+L3 load bandwidth [MBytes/s],119.0621,
+L3 load data volume [GBytes],0.1793,
+L3 evict bandwidth [MBytes/s],18.3891,
+L3 evict data volume [GBytes],0.0277,
+L3 bandwidth [MBytes/s],137.4512,
+L3 data volume [GBytes],0.2070,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.407751998 GHz,
+TABLE,Region op2,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.011612,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,180122500
+CPU_CLK_UNHALTED_CORE,FIXC1,43696250
+CPU_CLK_UNHALTED_REF,FIXC2,39286710
+L2_LINES_IN_ALL,PMC0,6599
+L2_TRANS_L2_WB,PMC1,1269
+TABLE,Region op2,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0116,
+Runtime unhalted [s],0.0128,
+Clock [MHz],3790.2381,
+CPI,0.2426,
+L3 load bandwidth [MBytes/s],36.3722,
+L3 load data volume [GBytes],0.0004,
+L3 evict bandwidth [MBytes/s],6.9944,
+L3 evict data volume [GBytes],0.0001,
+L3 bandwidth [MBytes/s],43.3666,
+L3 data volume [GBytes],0.0005,

@@ -1,0 +1,59 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+Algoritmo executado com J (A:SEM, J:JACOBI) e resultados gravados no arquivo _bench/out2000L3 
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408024084 GHz,
+TABLE,Region op1,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.378231,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,6360760000
+CPU_CLK_UNHALTED_CORE,FIXC1,1423201000
+CPU_CLK_UNHALTED_REF,FIXC2,1279547000
+L2_LINES_IN_ALL,PMC0,1075010
+L2_TRANS_L2_WB,PMC1,187017
+TABLE,Region op1,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.3782,
+Runtime unhalted [s],0.4176,
+Clock [MHz],3790.6410,
+CPI,0.2237,
+L3 load bandwidth [MBytes/s],181.9012,
+L3 load data volume [GBytes],0.0688,
+L3 evict bandwidth [MBytes/s],31.6449,
+L3 evict data volume [GBytes],0.0120,
+L3 bandwidth [MBytes/s],213.5461,
+L3 data volume [GBytes],0.0808,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408024084 GHz,
+TABLE,Region op2,Group 1 Raw,L3,5
+Region Info,Core 3,
+RDTSC Runtime [s],0.002916,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,45063020
+CPU_CLK_UNHALTED_CORE,FIXC1,10954860
+CPU_CLK_UNHALTED_REF,FIXC2,9849120
+L2_LINES_IN_ALL,PMC0,3622
+L2_TRANS_L2_WB,PMC1,372
+TABLE,Region op2,Group 1 Metric,L3,10
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0029,
+Runtime unhalted [s],0.0032,
+Clock [MHz],3790.6358,
+CPI,0.2431,
+L3 load bandwidth [MBytes/s],79.4891,
+L3 load data volume [GBytes],0.0002,
+L3 evict bandwidth [MBytes/s],8.1640,
+L3 evict data volume [GBytes],2.380800e-05,
+L3 bandwidth [MBytes/s],87.6531,
+L3 data volume [GBytes],0.0003,
