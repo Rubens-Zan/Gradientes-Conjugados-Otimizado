@@ -1,0 +1,58 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408036185 GHz,
+TABLE,Region ITERACAO_METODO,Group 1 Raw,FLOPS_DP,6
+Region Info,Core 3,
+RDTSC Runtime [s],1.267315,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,3620169000
+CPU_CLK_UNHALTED_CORE,FIXC1,4765694000
+CPU_CLK_UNHALTED_REF,FIXC2,4284959000
+FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE,PMC0,0
+FP_ARITH_INST_RETIRED_SCALAR_DOUBLE,PMC1,1202401000
+FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE,PMC2,300675000
+TABLE,Region ITERACAO_METODO,Group 1 Metric,FLOPS_DP,9
+Metric,Core 3,
+Runtime (RDTSC) [s],1.2673,
+Runtime unhalted [s],1.3984,
+Clock [MHz],3790.3881,
+CPI,1.3164,
+DP MFLOP/s,1897.7926,
+AVX DP MFLOP/s,949.0143,
+Packed MUOPS/s,237.2536,
+Scalar MUOPS/s,948.7783,
+Vectorization ratio,20.0040,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408036185 GHz,
+TABLE,Region CALCULA_RESIDUO,Group 1 Raw,FLOPS_DP,6
+Region Info,Core 3,
+RDTSC Runtime [s],0.004214,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,12033680
+CPU_CLK_UNHALTED_CORE,FIXC1,15879600
+CPU_CLK_UNHALTED_REF,FIXC2,14276400
+FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE,PMC0,0
+FP_ARITH_INST_RETIRED_SCALAR_DOUBLE,PMC1,4002010
+FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE,PMC2,1000000
+TABLE,Region CALCULA_RESIDUO,Group 1 Metric,FLOPS_DP,9
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0042,
+Runtime unhalted [s],0.0047,
+Clock [MHz],3790.7492,
+CPI,1.3196,
+DP MFLOP/s,1898.7639,
+AVX DP MFLOP/s,949.1435,
+Packed MUOPS/s,237.2859,
+Scalar MUOPS/s,949.6204,
+Vectorization ratio,19.9920,

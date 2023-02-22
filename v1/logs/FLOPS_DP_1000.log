@@ -1,0 +1,58 @@
+--------------------------------------------------------------------------------
+CPU name:	Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz
+CPU type:	Intel Coffeelake processor
+CPU clock:	3.41 GHz
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408020482 GHz,
+TABLE,Region ITERACAO_METODO,Group 1 Raw,FLOPS_DP,6
+Region Info,Core 3,
+RDTSC Runtime [s],0.309840,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,910349200
+CPU_CLK_UNHALTED_CORE,FIXC1,1165066000
+CPU_CLK_UNHALTED_REF,FIXC2,1047811000
+FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE,PMC0,0
+FP_ARITH_INST_RETIRED_SCALAR_DOUBLE,PMC1,301201200
+FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE,PMC2,75337500
+TABLE,Region ITERACAO_METODO,Group 1 Metric,FLOPS_DP,9
+Metric,Core 3,
+Runtime (RDTSC) [s],0.3098,
+Runtime unhalted [s],0.3419,
+Clock [MHz],3789.3941,
+CPI,1.2798,
+DP MFLOP/s,1944.7160,
+AVX DP MFLOP/s,972.5981,
+Packed MUOPS/s,243.1495,
+Scalar MUOPS/s,972.1179,
+Vectorization ratio,20.0079,
+STRUCT,Info,3
+CPU name:,Intel(R) Core(TM) i5-7500 CPU @ 3.40GHz,
+CPU type:,Intel Coffeelake processor,
+CPU clock:,3.408020482 GHz,
+TABLE,Region CALCULA_RESIDUO,Group 1 Raw,FLOPS_DP,6
+Region Info,Core 3,
+RDTSC Runtime [s],0.001054,
+call count,1,
+Event,Counter,Core 3
+INSTR_RETIRED_ANY,FIXC0,3018676
+CPU_CLK_UNHALTED_CORE,FIXC1,3887645
+CPU_CLK_UNHALTED_REF,FIXC2,3497744
+FP_ARITH_INST_RETIRED_128B_PACKED_DOUBLE,PMC0,0
+FP_ARITH_INST_RETIRED_SCALAR_DOUBLE,PMC1,1001010
+FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE,PMC2,250000
+TABLE,Region CALCULA_RESIDUO,Group 1 Metric,FLOPS_DP,9
+Metric,Core 3,
+Runtime (RDTSC) [s],0.0011,
+Runtime unhalted [s],0.0011,
+Clock [MHz],3787.9198,
+CPI,1.2879,
+DP MFLOP/s,1898.8572,
+AVX DP MFLOP/s,948.9494,
+Packed MUOPS/s,237.2373,
+Scalar MUOPS/s,949.9078,
+Vectorization ratio,19.9839,
