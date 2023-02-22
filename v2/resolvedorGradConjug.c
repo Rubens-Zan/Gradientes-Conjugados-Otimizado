@@ -186,14 +186,14 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 			printf("\n");
 		#endif		
 
-		fprintf(arq, "# iter %u: %.15g\n", numiter, normx);
+		fprintf(arqSaida, "# iter %u: %.15g\n", numiter, normx);
 
 		//! xold = x
 		memcpy(vetxold, vetx, (n + 1)*sizeof(double));
 		//! relerr = max(|Xi - Xi-1|) / Xi
 		relerr = (fabs(vetx[indxmax]) < ZERO) ? 0.0 : (normx / fabs(vetx[indxmax]));
 		//!
-	} while ((numiter < iter) && (relerr > err));
+	} while (numiter < numiter);
 	
 	LIKWID_MARKER_STOP("op1");
  
