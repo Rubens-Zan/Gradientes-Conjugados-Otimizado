@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <likwid.h>
 
 #define UNROLL 8
 #define STRIDE 8
@@ -62,15 +61,14 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	unsigned int numiter;	// numero de iteracoes
 	unsigned int indxmax;	// indice no qual max(|xatual - xold|)
 	double soma;			// variavel auxiliar nos lacos
-    double tMedioIter, tempoResid, tempoPreCond, tempoInicio;
 
     double *simmat = SL->A;
     unsigned int n =SL->n;
     double *atvb = SL->b;
-    double *res = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+    double *res = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));;
     double *vetx =aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
 	double k = SL->nDiagonais;
-    tempoPreCond = timestamp();
+
     indxmax = 0;
 
 	z = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
@@ -91,7 +89,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	
 	numiter = 0;	
 	while(numiter < maxIt) 									// para k = 0 : max, faca
-	{	
+	{
 		
 		soma =  0.0;
 		//Unroll and Jam z = Av e soma =  vtz
@@ -204,30 +202,13 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 		//
 		++numiter;
 	};
-	
 	LIKWID_MARKER_STOP("op1");
- 	
-	tempoResid = timestamp();
-    fprintf(arqSaida, "# residuo: || %.15g || \n", normaL2Residuo(res, SL->n));
-    tempoResid = timestamp() - tempoResid; 
 
-    // tempo final
-    fprintf(arqSaida, "# Tempo PC: %.15g \n", tempoPreCond);
-    tMedioIter = tempoPreCond /  numiter;
-    fprintf(arqSaida, "# Tempo iter: %.15g \n", tMedioIter);
 	LIKWID_MARKER_START("op2");
-    calculaResiduoOriginal(SL,vetx, res);
 	LIKWID_MARKER_STOP("op2");
-    fprintf(arqSaida, "# Tempo residuo: %.15g \n", tempoResid);
-    fprintf(arqSaida, "# \n");
-    fprintf(arqSaida, "%d", SL->n);
-    prnVetorArq(vetx, SL->n, arqSaida);
-	
 	
 	free(v);
-	free(res);
 	free(z);
 	free(y);
-	free(vetx);
 	free(xAnt);
 }
