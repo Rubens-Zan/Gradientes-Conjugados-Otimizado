@@ -29,12 +29,12 @@ static inline void calculaResiduoOriginal(SistLinear_t *SL, double *x, double *r
     for (unsigned int i = 0; i < ((SL->n) - ((SL->n) % UNROLL)); i += UNROLL) // r = b - Ax
         for (unsigned int j = 0; j < (SL->n); ++j)
             for (unsigned int k = 0; k < UNROLL; ++k)
-                residuo[i + k] -= SL->A[indexMap(i + k + 1, j + 1, SL->nDiagonais)] * x[j+1];
+                residuo[i + k] -= SL->A[index(i + k + 1, j + 1, SL->nDiagonais)] * x[j+1];
 
     // remaider loop
     for (unsigned int i = ((SL->n) - ((SL->n) % UNROLL)); i < (SL->n); ++i)
         for (unsigned int j = 0; j < (SL->n); ++j)
-            residuo[i] -= SL->A[indexMap(i + 1, j + 1, SL->nDiagonais)] * x[j+1];
+            residuo[i] -= SL->A[index(i + 1, j + 1, SL->nDiagonais)] * x[j+1];
 }
 
 /******************FUNCOES GRADIENTE CONJUGADO com pre condicionador **********************************/
@@ -77,25 +77,28 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	vetv = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
 	
 
-	//!
+	//
 
 	indxmax = 0;
 
-	//! Algoritmo:
+	// Algoritmo:
 	vetv = malloc((n + 1) * sizeof(double));
 	vetz = malloc((n + 1) * sizeof(double));
 	vety = malloc((n + 1) * sizeof(double));
 	xAnt = malloc((n + 1) * sizeof(double));
-	memcpy(xAnt, vetx, (n + 1)*sizeof(double));	//! x0 = 0
-	memcpy(res, SL->b, (n + 1)*sizeof(double));		//! r = b
+	memcpy(xAnt, vetx, (n + 1)*sizeof(double));	// x0 = 0
+	memcpy(res, SL->b, (n + 1)*sizeof(double));		// r = b
 	
-	for(unsigned int i = 1; i < (n + 1); i++)		//! v = M-1b, y = M-1r 
+	// v = M-1b, y = M-1r 
+	for(unsigned int i = 1; i <= n; i++)		
 	{
-		vetv[i] = (SL->b[i] / SL->A[indexMap(i,i,SL->nDiagonais)]);
-		vety[i] = (res[i] / SL->A[indexMap(i,i,SL->nDiagonais)]); 
+		vetv[i] = (SL->b[i] / SL->A[index(i,i,SL->nDiagonais)]);
+		vety[i] = (res[i] / SL->A[index(i,i,SL->nDiagonais)]); 
 	}
 	aux0 = 0.0;
-	for(unsigned int i = 1; i < (n + 1); i++)		//! aux = ytr
+
+	// aux = ytr
+	for(unsigned int i = 1; i <= n; i++)		
 	{
 		aux0 += vety[i] * res[i]; 
 	}
@@ -108,41 +111,47 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	{
 		numIter++;
 		
-		for(unsigned int i = 1; i < (n + 1); i++)	//! z = Av
+		// z = Av
+		for(unsigned int i = 1; i <= n; i++)	
 		{
 			soma = 0.0;
-			for(unsigned int j = 1; j < (n + 1); j++)
+			for(unsigned int j = 1; j <= n; j++)
 			{
-				soma += (SL->A[indexMap(i,j,SL->nDiagonais)] ) * vetv[j];
+				soma += (SL->A[index(i,j,SL->nDiagonais)] ) * vetv[j];
 			}
 			vetz[i] = soma;
 		}
 
 		soma = 0.0;
-		for(unsigned int i = 1; i < (n + 1); i++)	//! calcula vtz
+		// calcula vtz
+		for(unsigned int i = 1; i <= n; i++)	
 		{
 			soma += vetv[i] * vetz[i]; 
 		}
-		//! s = aux/vtz
+		// s = aux/vtz
 		alpha = (aux0 / soma);
 
-		for(unsigned int i = 1; i < (n + 1); i++)	//! xk+1 = xk + sv
+		// xk+1 = xk + sv
+		for(unsigned int i = 1; i <= n; i++)	
 		{
 			vetx[i] = xAnt[i] + (alpha * vetv[i]); 
 		}
 
-		for(unsigned int i = 1; i < (n + 1); i++)	//! r = r - sz
+		// r = r - sz
+		for(unsigned int i = 1; i <= n; i++)	
 		{
 			res[i] = res[i] - (alpha * vetz[i]); 
 		}
 
-		for(unsigned int i = 1; i < (n + 1); i++)	//! y = M-1r
+		// y = M-1r
+		for(unsigned int i = 1; i <= n; i++)	
 		{
-			vety[i] = (res[i] / SL->A[indexMap(i,i,SL->nDiagonais)]); 
+			vety[i] = (res[i] / SL->A[index(i,i,SL->nDiagonais)]); 
 		}
 
 		normx = 0.0;
-		for(unsigned int i = 1; i < (n + 1); i++)	//! calcula ||x||
+		// calcula ||x||
+		for(unsigned int i = 1; i <= n; i++)	
 		{
 			if (normx < fabs(vetx[i] - xAnt[i]))
 			{
@@ -152,27 +161,28 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 		}		
 
 		aux1 = 0.0;
-		for(unsigned int i = 1; i < (n + 1); i++)	//! aux1 = ytr
+		// aux1 = ytr
+		for(unsigned int i = 1; i <= n; i++)	
 		{
 			aux1 += vety[i] * res[i]; 
 		}
 
-		//! m = aux1 / aux
+		// m = aux1 / aux
 		beta = (aux1 / aux0);
 		aux0 = aux1;
 
-		for(unsigned int i = 1; i < (n + 1); i++)	//! v = y + mv
+		// v = y + mv
+		for(unsigned int i = 1; i <= n; i++)	
 		{
 			vetv[i] = vety[i] + (beta * vetv[i]); 
 		}
 
 		fprintf(arqSaida, "# iter %u: ||%.15g||\n", numIter, normx);
 
-		//! xold = x
+		// xold = x
 		memcpy(xAnt, vetx, (n + 1)*sizeof(double));
-		//! relerr = max(|Xi - Xi-1|) / Xi
+		// relerr = max(|Xi - Xi-1|) / Xi
 		relerr = (normx / fabs(vetx[indxmax])); // nao utilizado nessa implementação
-		//!
 	};
 	
 	LIKWID_MARKER_STOP("op1");
