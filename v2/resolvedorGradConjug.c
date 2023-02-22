@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-
+#include <likwid.h>
 #define UNROLL 8
 #define STRIDE 8
 #define ALIGNMENT 16
@@ -54,10 +54,10 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	double normx;			// ||x||
 	double relerr;			// erro relativo atual
 	double aux0, aux1;		// aux, aux1
-	double *xAnt;			// vetor x anterior
-	double *v;				// v
-	double *z;			    // z
-	double *y;			    // y
+	double *vetxold;			// vetor x anterior
+	double *vetv;				// v
+	double *vetz;			    // z
+	double *vety;			    // y
 	unsigned int numiter;	// numero de iteracoes
 	unsigned int indxmax;	// indice no qual max(|xatual - xold|)
 	double soma;			// variavel auxiliar nos lacos
@@ -71,27 +71,14 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 
     indxmax = 0;
 
-	z = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
-	xAnt = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
-	memcpy(xAnt, vetx, (n + 1)*sizeof(double));	// x0 = 0
+	vetz = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	vetxold = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	memcpy(vetxold, vetx, (n + 1)*sizeof(double));	// x0 = 0
 	memcpy(res, atvb, (n + 1)*sizeof(double));		// r = b
-	y = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
-	v = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	vety = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
+	vetv = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
 	
-	
-	//! Variáveis:
-	double alpha;			//! s
-	double beta;			//! m
-	double normx;			//! ||x||
-	double relerr;			//! erro relativo atual
-	double aux0, aux1;		//! aux, aux1
-	double *vetxold;		//! vetor x anterior
-	double *vetv;			//! v
-	double *vetz;			//! z
-	double *vety;			//! y
-	unsigned int numiter;	//! numero de iteracoes
-	unsigned int indxmax;	//! indice no qual max(|xatual - xold|)
-	double soma;			//! variavel auxiliar nos lacos
+
 	//!
 
 	indxmax = 0;
