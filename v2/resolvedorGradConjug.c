@@ -92,15 +92,15 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	memcpy(vetxold, vetx, (n + 1)*sizeof(double));	//! x0 = 0
 	memcpy(res, atvb, (n + 1)*sizeof(double));		//! r = b
 	
-	for(unsigned int g = 1; g < (n + 1); g++)		//! v = M-1b, y = M-1r 
+	for(unsigned int i = 1; i < (n + 1); i++)		//! v = M-1b, y = M-1r 
 	{
-		vetv[g] = (atvb[g] / simmat[indexMap(g,g,k)]);
-		vety[g] = (res[g] / simmat[indexMap(g,g,k)]); 
+		vetv[i] = (atvb[i] / simmat[indexMap(i,i,k)]);
+		vety[i] = (res[i] / simmat[indexMap(i,i,k)]); 
 	}
 	aux0 = 0.0;
-	for(unsigned int g = 1; g < (n + 1); g++)		//! aux = ytr
+	for(unsigned int i = 1; i < (n + 1); i++)		//! aux = ytr
 	{
-		aux0 += vety[g] * res[g]; 
+		aux0 += vety[i] * res[i]; 
 	}
 	
 	LIKWID_MARKER_START("op1");
@@ -111,65 +111,65 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	{
 		numIter++;
 		
-		for(unsigned int a = 1; a < (n + 1); a++)	//! z = Av
+		for(unsigned int i = 1; i < (n + 1); i++)	//! z = Av
 		{
 			soma = 0.0;
-			for(unsigned int b = 1; b < (n + 1); b++)
+			for(unsigned int j = 1; j < (n + 1); j++)
 			{
-				soma += (simmat[indexMap(a,b,k)] ) * vetv[b];
+				soma += (simmat[indexMap(i,j,k)] ) * vetv[j];
 			}
-			vetz[a] = soma;
+			vetz[i] = soma;
 		}
 
 		soma = 0.0;
-		for(unsigned int g = 1; g < (n + 1); g++)	//! calcula vtz
+		for(unsigned int i = 1; i < (n + 1); i++)	//! calcula vtz
 		{
-			soma += vetv[g] * vetz[g]; 
+			soma += vetv[i] * vetz[i]; 
 		}
 		//! s = aux/vtz
 		alpha = (aux0 / soma);
 
-		for(unsigned int g = 1; g < (n + 1); g++)	//! xk+1 = xk + sv
+		for(unsigned int i = 1; i < (n + 1); i++)	//! xk+1 = xk + sv
 		{
-			vetx[g] = vetxold[g] + (alpha * vetv[g]); 
+			vetx[i] = vetxold[i] + (alpha * vetv[i]); 
 		}
 
-		for(unsigned int g = 1; g < (n + 1); g++)	//! r = r - sz
+		for(unsigned int i = 1; i < (n + 1); i++)	//! r = r - sz
 		{
-			res[g] = res[g] - (alpha * vetz[g]); 
+			res[i] = res[i] - (alpha * vetz[i]); 
 		}
 
-		for(unsigned int g = 1; g < (n + 1); g++)	//! y = M-1r
+		for(unsigned int i = 1; i < (n + 1); i++)	//! y = M-1r
 		{
-			vety[g] = (res[g] / simmat[indexMap(g,g,k)]); 
+			vety[i] = (res[i] / simmat[indexMap(i,i,k)]); 
 		}
 
 		normx = 0.0;
-		for(unsigned int g = 1; g < (n + 1); g++)	//! calcula ||x||
+		for(unsigned int i = 1; i < (n + 1); i++)	//! calcula ||x||
 		{
-			if (normx < fabs(vetx[g] - vetxold[g]))
+			if (normx < fabs(vetx[i] - vetxold[i]))
 			{
-				normx = fabs(vetx[g] - vetxold[g]);
-				indxmax = g; 
+				normx = fabs(vetx[i] - vetxold[i]);
+				indxmax = i; 
 			}
 		}		
 
 		aux1 = 0.0;
-		for(unsigned int g = 1; g < (n + 1); g++)	//! aux1 = ytr
+		for(unsigned int i = 1; i < (n + 1); i++)	//! aux1 = ytr
 		{
-			aux1 += vety[g] * res[g]; 
+			aux1 += vety[i] * res[i]; 
 		}
 
 		//! m = aux1 / aux
 		beta = (aux1 / aux0);
 		aux0 = aux1;
 
-		for(unsigned int g = 1; g < (n + 1); g++)	//! v = y + mv
+		for(unsigned int i = 1; i < (n + 1); i++)	//! v = y + mv
 		{
-			vetv[g] = vety[g] + (beta * vetv[g]); 
+			vetv[i] = vety[i] + (beta * vetv[i]); 
 		}
 
-		fprintf(arqSaida, "# iter %u: %.15g\n", numIter, normx);
+		fprintf(arqSaida, "# iter %u: ||%.15g||\n", numIter, normx);
 
 		//! xold = x
 		memcpy(vetxold, vetx, (n + 1)*sizeof(double));
