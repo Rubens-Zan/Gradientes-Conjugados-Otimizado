@@ -93,8 +93,8 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	
 	for(unsigned int g = 1; g < (n + 1); g++)		//! v = M-1b, y = M-1r 
 	{
-		vetv[g] = (atvb[g] / obtemValor(g, g, k, n, simmat));
-		vety[g] = (res[g] / obtemValor(g, g, k, n, simmat)); 
+		vetv[g] = (atvb[g] / simmat[indexMap(g,g,k)]);
+		vety[g] = (res[g] / simmat[indexMap(g,g,k)]); 
 	}
 	aux0 = 0.0;
 	for(unsigned int g = 1; g < (n + 1); g++)		//! aux = ytr
@@ -114,7 +114,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 			soma = 0.0;
 			for(unsigned int b = 1; b < (n + 1); b++)
 			{
-				soma += (obtemValor(a, b, k, n, simmat)) * vetv[b];
+				soma += (simmat[indexMap(a,b,k)] ) * vetv[b];
 			}
 			vetz[a] = soma;
 		}
@@ -139,7 +139,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 
 		for(unsigned int g = 1; g < (n + 1); g++)	//! y = M-1r
 		{
-			vety[g] = (res[g] / obtemValor(g, g, k, n, simmat)); 
+			vety[g] = (res[g] / simmat[indexMap(g,g,k)]); 
 		}
 
 		normx = 0.0;
