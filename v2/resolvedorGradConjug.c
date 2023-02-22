@@ -61,6 +61,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	unsigned int numIter;	// numero de iteracoes
 	unsigned int indxmax;	// indice no qual max(|xatual - xold|)
 	double soma;			// variavel auxiliar nos lacos
+    double tMedioIter, tempoResid, tempoPreCond, tempoInicio;
 
     double *simmat = SL->A;
     unsigned int n =SL->n;
@@ -105,6 +106,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	LIKWID_MARKER_START("op1");
  
 	numIter = 0;	
+    tempoPreCond = timestamp();
 	while (numIter < maxIt)
 	{
 		numIter++;
@@ -125,7 +127,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 			soma += vetv[g] * vetz[g]; 
 		}
 		//! s = aux/vtz
-		alpha = (fabs(soma) < ZERO) ? 0.0 : (aux0 / soma);
+		alpha = (aux0 / soma);
 
 		for(unsigned int g = 1; g < (n + 1); g++)	//! xk+1 = xk + sv
 		{
@@ -159,7 +161,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 		}
 
 		//! m = aux1 / aux
-		beta = (fabs(aux0) < ZERO) ? 0.0 : (aux1 / aux0);
+		beta = (aux1 / aux0);
 		aux0 = aux1;
 
 		for(unsigned int g = 1; g < (n + 1); g++)	//! v = y + mv
@@ -172,14 +174,29 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 		//! xold = x
 		memcpy(vetxold, vetx, (n + 1)*sizeof(double));
 		//! relerr = max(|Xi - Xi-1|) / Xi
-		relerr = (fabs(vetx[indxmax]) < ZERO) ? 0.0 : (normx / fabs(vetx[indxmax]));
+		relerr = (normx / fabs(vetx[indxmax])); // nao utilizado nessa implementação
 		//!
 	};
 	
 	LIKWID_MARKER_STOP("op1");
+
 	LIKWID_MARKER_START("op2");
+    tempoResid = timestamp();
+
 	calculaResiduoOriginal(SL, vetx, res); 
+    tempoResid = timestamp() - tempoResid; 
     fprintf(arqSaida, "# residuo: || %.15g || \n", normaL2Residuo(res, SL->n));
+  // tempo final
+  	tempoPreCond =tempoPreCond - timestamp();
+
+    fprintf(arqSaida, "# Tempo PC: %.15g \n", tempoPreCond);
+    tMedioIter = tMedioIter / it;
+    fprintf(arqSaida, "# Tempo iter: %.15g \n", tMedioIter);
+
+    fprintf(arqSaida, "# Tempo residuo: %.15g \n", tempoResid);
+    fprintf(arqSaida, "# \n");
+    fprintf(arqSaida, "%d", SL->n);
+    prnVetorArq(x, SL->n, arqSaida);
 
 	LIKWID_MARKER_STOP("op2");
  
