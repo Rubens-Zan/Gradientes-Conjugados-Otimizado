@@ -78,137 +78,127 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	y = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
 	v = aligned_alloc(ALIGNMENT, (((n + 1) * sizeof(double)) + (ALIGNMENT - (((n + 1) * sizeof(double)) % ALIGNMENT))));
 	
-	aux0 = 0.0;
-	for(unsigned int i = 1; i < (n + 1); i++)		// v = M-1b, y = M-1r 
-	{
-		v[i] = (atvb[i] / simmat[indexMap(i,i,k)]);
-		y[i] = (res[i] / simmat[indexMap(i,i,k)]);
-		aux0 += y[i] * res[i];	// aux = ytr
-	}
-	LIKWID_MARKER_START("op1");
 	
-	numiter = 0;	
-	while(numiter < maxIt) 									// para k = 0 : max, faca
+	//! Variáveis:
+	double alpha;			//! s
+	double beta;			//! m
+	double normx;			//! ||x||
+	double relerr;			//! erro relativo atual
+	double aux0, aux1;		//! aux, aux1
+	double *vetxold;		//! vetor x anterior
+	double *vetv;			//! v
+	double *vetz;			//! z
+	double *vety;			//! y
+	unsigned int numiter;	//! numero de iteracoes
+	unsigned int indxmax;	//! indice no qual max(|xatual - xold|)
+	double soma;			//! variavel auxiliar nos lacos
+	//!
+
+	indxmax = 0;
+
+	//! Algoritmo:
+	vetv = malloc((n + 1) * sizeof(double));
+	vetz = malloc((n + 1) * sizeof(double));
+	vety = malloc((n + 1) * sizeof(double));
+	vetxold = malloc((n + 1) * sizeof(double));
+	memcpy(vetxold, vetx, (n + 1)*sizeof(double));	//! x0 = 0
+	memcpy(res, atvb, (n + 1)*sizeof(double));		//! r = b
+	
+	for(unsigned int g = 1; g < (n + 1); g++)		//! v = M-1b, y = M-1r 
 	{
+		vetv[g] = (atvb[g] / obtemValor(g, g, k, n, simmat));
+		vety[g] = (res[g] / obtemValor(g, g, k, n, simmat)); 
+	}
+	aux0 = 0.0;
+	for(unsigned int g = 1; g < (n + 1); g++)		//! aux = ytr
+	{
+		aux0 += vety[g] * res[g]; 
+	}
+	
+	LIKWID_MARKER_START("op1");
+ 
+	numiter = 0;	
+	do 									//! para k = 0 : max, faca
+	{
+		numiter++;
 		
-		soma =  0.0;
-		//Unroll and Jam z = Av e soma =  vtz
-		memset(z, 0, (n + 1));
-		for(unsigned int i =  1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	// z = Av
+		for(unsigned int a = 1; a < (n + 1); a++)	//! z = Av
 		{
-			for(unsigned int j = 1; j < (n + 1); j++)
+			soma = 0.0;
+			for(unsigned int b = 1; b < (n + 1); b++)
 			{
-				for(unsigned int c = 0; c < STRIDE; ++c)
-				{
-					z[i + c] += simmat[indexMap((i + c), j, k)] * v[j];
-				}
+				soma += (obtemValor(a, b, k, n, simmat)) * vetv[b];
 			}
-			for(unsigned int c = 0; c < STRIDE; ++c)
-			{
-				soma += z[i + c] * v[i + c];	// calcula vtz
-			}
+			vetz[a] = soma;
 		}
 
-		//remaider loop
-		for(unsigned int i =  (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)
+		soma = 0.0;
+		for(unsigned int g = 1; g < (n + 1); g++)	//! calcula vtz
 		{
-			for(unsigned int j = 1; j < (n + 1); ++j)
-			{
-				z[i] += simmat[indexMap(i,j,k)] * v[j];
-			}
-			soma += z[i] * v[i];
+			soma += vetv[g] * vetz[g]; 
+		}
+		//! s = aux/vtz
+		alpha = (fabs(soma) < ZERO) ? 0.0 : (aux0 / soma);
+
+		for(unsigned int g = 1; g < (n + 1); g++)	//! xk+1 = xk + sv
+		{
+			vetx[g] = vetxold[g] + (alpha * vetv[g]); 
 		}
 
-		// s = aux/vtz
-		alpha =  (fabs(soma) < ZERO) ? 0.0 : (aux0 / soma);
+		for(unsigned int g = 1; g < (n + 1); g++)	//! r = r - sz
+		{
+			res[g] = res[g] - (alpha * vetz[g]); 
+		}
+
+		for(unsigned int g = 1; g < (n + 1); g++)	//! y = M-1r
+		{
+			vety[g] = (res[g] / obtemValor(g, g, k, n, simmat)); 
+		}
 
 		normx = 0.0;
-		// CALCULO DA NORMA
-		//Unroll and Jam do calculo da norma e x = xold
-		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
+		for(unsigned int g = 1; g < (n + 1); g++)	//! calcula ||x||
 		{
-			for(unsigned int j = 0; j < STRIDE; ++j)
+			if (normx < fabs(vetx[g] - vetxold[g]))
 			{
-				vetx[i + j] += (alpha * v[i + j]);			// xk+1 = xk + sv
-				if (normx < fabs(vetx[i + j] - xAnt[i + j]))	// calcula ||x||
-				{
-					normx = fabs(vetx[i + j] - xAnt[i + j]);
-					indxmax = i+j; 
-				}
-			} 
-		}
-		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//remainder loop
-		{
-			vetx[i] += (alpha * v[i]);			// xk+1 = xk + sv
-			if (normx < fabs(vetx[i] - xAnt[i]))	// calcula ||x||
-			{
-				normx = fabs(vetx[i] - xAnt[i]);
-				indxmax = i; 
-			}  
-		}
-		
-		//Unroll and Jam de r = r - sz e y = M-1r
-		// CALCULO DO RESID E Y
-		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
-		{
-			for(unsigned int j = 0; j < STRIDE; ++j)
-			{
-				res[i + j] -= (alpha * z[i + j]);
-				y[i + j] = (res[i + j] / simmat[indexMap(i+j,i+j,k)]);
-			} 
-		}
-		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//remainder loop
-		{
-			res[i] -= (alpha * z[i]);
-			y[i] = (res[i] / simmat[indexMap(i,i,k)]);  
-		}
-		aux1 = 0.0;
+				normx = fabs(vetx[g] - vetxold[g]);
+				indxmax = g; 
+			}
+		}		
 
-		//Unroll and Jam de aux1 = ytr
-		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
+		aux1 = 0.0;
+		for(unsigned int g = 1; g < (n + 1); g++)	//! aux1 = ytr
 		{
-			for(unsigned int j = 0; j < STRIDE; ++j)
-			{
-				aux1 += y[i + j] * res[i + j];
-			} 
+			aux1 += vety[g] * res[g]; 
 		}
-		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//remainder loop
-		{
-			aux1 += y[i] * res[i];  
-		}
-		
-		// m = aux1 / aux
-		beta =  (aux1 / aux0);
+
+		//! m = aux1 / aux
+		beta = (fabs(aux0) < ZERO) ? 0.0 : (aux1 / aux0);
 		aux0 = aux1;
 
-		//Unroll and Jam de v = y + mv
-		for(unsigned int i = 1; i < (1 + (n + 1) - ((n + 1) % STRIDE)); i+=STRIDE)	
+		for(unsigned int g = 1; g < (n + 1); g++)	//! v = y + mv
 		{
-			for(unsigned int j = 0; j < STRIDE; ++j)
-			{
-				v[i + j] = y[i + j] + (beta * v[i + j]);
-			} 
+			vetv[g] = vety[g] + (beta * vetv[g]); 
 		}
-		for(unsigned int i = (1 + (n + 1) - ((n + 1) % STRIDE)); i < (n + 1); ++i)	//remainder loop
-		{
-			v[i] = y[i] + (beta * v[i]);  
-		}	
-		fprintf(arqSaida, "# iter %u: %.15g\n", numiter, normx);
 
-		// xold = x
-		memcpy(xAnt, vetx, (n + 1)*sizeof(double));
-		// relerr = max(|Xi - Xi-1|) / Xi
-		relerr =(normx / fabs(vetx[indxmax]));
-		//
-		++numiter;
-	};
-	LIKWID_MARKER_STOP("op1");
+		#ifdef DEBUG
+			printf("\n");
+			printf("||X%02u|| = %-11.7g \n", numiter, normx);
+			printf("\n");
+		#endif		
 
-	LIKWID_MARKER_START("op2");
-	LIKWID_MARKER_STOP("op2");
+		fprintf(arq, "# iter %u: %.15g\n", numiter, normx);
+
+		//! xold = x
+		memcpy(vetxold, vetx, (n + 1)*sizeof(double));
+		//! relerr = max(|Xi - Xi-1|) / Xi
+		relerr = (fabs(vetx[indxmax]) < ZERO) ? 0.0 : (normx / fabs(vetx[indxmax]));
+		//!
+	} while ((numiter < iter) && (relerr > err));
 	
-	free(v);
-	free(z);
-	free(y);
-	free(xAnt);
+	LIKWID_MARKER_STOP("op1");
+ 
+	free(vetv);
+	free(vetz);
+	free(vety);
+	free(vetxold);
 }
