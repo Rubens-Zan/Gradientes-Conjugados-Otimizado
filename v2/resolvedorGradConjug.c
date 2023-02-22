@@ -58,7 +58,7 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	double *vetv;				// v
 	double *vetz;			    // z
 	double *vety;			    // y
-	unsigned int numiter;	// numero de iteracoes
+	unsigned int numIter;	// numero de iteracoes
 	unsigned int indxmax;	// indice no qual max(|xatual - xold|)
 	double soma;			// variavel auxiliar nos lacos
 
@@ -104,10 +104,10 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 	
 	LIKWID_MARKER_START("op1");
  
-	numiter = 0;	
-	do 									//! para k = 0 : max, faca
+	numIter = 0;	
+	while (numIter < maxIt)
 	{
-		numiter++;
+		numIter++;
 		
 		for(unsigned int a = 1; a < (n + 1); a++)	//! z = Av
 		{
@@ -167,22 +167,21 @@ void gradienteConjugadoPreCondic(SistLinear_t *SL, int maxIt, double tol, FILE *
 			vetv[g] = vety[g] + (beta * vetv[g]); 
 		}
 
-		#ifdef DEBUG
-			printf("\n");
-			printf("||X%02u|| = %-11.7g \n", numiter, normx);
-			printf("\n");
-		#endif		
-
-		fprintf(arqSaida, "# iter %u: %.15g\n", numiter, normx);
+		fprintf(arqSaida, "# iter %u: %.15g\n", numIter, normx);
 
 		//! xold = x
 		memcpy(vetxold, vetx, (n + 1)*sizeof(double));
 		//! relerr = max(|Xi - Xi-1|) / Xi
 		relerr = (fabs(vetx[indxmax]) < ZERO) ? 0.0 : (normx / fabs(vetx[indxmax]));
 		//!
-	} while (numiter < numiter);
+	};
 	
 	LIKWID_MARKER_STOP("op1");
+	LIKWID_MARKER_START("op2");
+	calculaResiduoOriginal(SL, vetx, res); 
+    fprintf(arqSaida, "# residuo: || %.15g || \n", normaL2Residuo(res, SL->n));
+
+	LIKWID_MARKER_STOP("op2");
  
 	free(vetv);
 	free(vetz);
