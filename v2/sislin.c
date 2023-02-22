@@ -33,12 +33,14 @@ SistLinear_t *alocaSisLin(unsigned int n, unsigned int k)
 }
 /**
  * @brief      Função que retorna o índice no array de diagonais de um elemento aij
+ *
  * @param      i   coordenada linha do elemento
  * @param      j   coordenada coluna do elemento
  * @param      k   quantidade de diagonais da matriz A
+ *
  * @return 	   indice de aij no array de diagonais
  */
-unsigned int index(unsigned int i, unsigned int j, unsigned int k)
+unsigned int indexMap(unsigned int i, unsigned int j, unsigned int k)
 {
   if ((j > i ? (j - i) : (i - j)) > (k / 2))
   {
@@ -109,8 +111,8 @@ void iniSisLin(SistLinear_t *SL, unsigned int nDiagonais, double *matT)
 	 		{
 	 			termo = generateRandomA(i, j, nDiagonais);
 				
-	 			SL->A[index(i, j, nDiagonais)] = termo;
-	 			matT[index(j, i, nDiagonais)] = termo;	 			
+	 			SL->A[indexMap(i, j, nDiagonais)] = termo;
+	 			matT[indexMap(j, i, nDiagonais)] = termo;	 			
 	 		}
 	 	}
 	}
@@ -120,7 +122,7 @@ void calcMatrizTransp(SistLinear_t *SL, SistLinear_t *SLtransp){
   SLtransp->A[0] = 0.0;
   for (unsigned int i=1;i <= SL->n;++i){
     for (unsigned int j=1;j <= SL->n;++j){
-      SLtransp->A[index(j,i, SL->nDiagonais)] = SL->A[index(i,j, SL->nDiagonais)]; 
+      SLtransp->A[indexMap(j,i, SL->nDiagonais)] = SL->A[indexMap(i,j, SL->nDiagonais)]; 
     }
   }
 }
@@ -135,7 +137,7 @@ void calcularAtxB(unsigned int k, unsigned int n, double *matrizTransp, double *
 		soma = 0.0;
 	  for (unsigned int j = 1; j <= n; ++j)
 		{
-			at = matrizTransp[index(i,j,k)];
+			at = matrizTransp[indexMap(i,j,k)];
 			soma += at * vb[j-1];
 		}
 		atvb[i] = soma;
@@ -160,16 +162,17 @@ void calcularMatrizAtxA( SistLinear_t   *restrict SL ,double *  matT ,SistLinear
 	 			soma = 0.0;
 	 			for (unsigned int k = 1; k < (SL->n + 1); ++k)
 	 			{
-	 				at = matT[index(i,k,SL->nDiagonais)]; 
-	 				a = SL->A[index(k,j, SL->nDiagonais)];
+	 				at = matT[indexMap(i,k,SL->nDiagonais)]; 
+	 				a = SL->A[indexMap(k,j, SL->nDiagonais)];
 	 				soma += at * a;
 	 			}
 
-	 			novoSisLin->A[index(i, j, simk)] = soma;
+	 			novoSisLin->A[indexMap(i, j, simk)] = soma;
 	 		} 
 		}
 	}
 }
+
 
 /**
  * @brief - Printa o vetor V no arquivo arqSaida

@@ -17,7 +17,7 @@ typedef struct {
   unsigned int nDiagonais; // numero de diagonais do SL
 } SistLinear_t;
 
-unsigned int index(unsigned int i, unsigned int j, unsigned int k);
+unsigned int indexMap(unsigned int i, unsigned int j, unsigned int k);
 
 void calcMatrizTransp(SistLinear_t *SL, SistLinear_t *SLtransp); 
 SistLinear_t* alocaSisLin (unsigned int n, unsigned int k);
